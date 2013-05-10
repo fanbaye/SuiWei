@@ -16,6 +16,7 @@
 
 @property (nonatomic, retain) NSArray *statuses;
 
+
 @end
 
 @implementation DisplayViewController
