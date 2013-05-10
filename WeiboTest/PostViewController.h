@@ -19,19 +19,13 @@
 
 {
     id<PostViewControllerDelegate> _delegate;
-    NSData *_imgData;
     FDTakeController *_fdTakeController;
+    UIImageView *_userPhoto;
+    
 }
 
 @property (nonatomic, assign) id<PostViewControllerDelegate> delegate;
-@property (nonatomic, retain) NSData *imgData;
 @property (nonatomic, retain) FDTakeController *fdTakeController;
-- (IBAction)selectImg:(id)sender;
-@property (retain, nonatomic) IBOutlet UITextView *textView;
-@property (retain, nonatomic) IBOutlet UIImageView *headPhoto;
-@property (retain, nonatomic) IBOutlet UILabel *remainLetter;
-@property (retain, nonatomic) IBOutlet UIImageView *libraryPhoto;
-- (IBAction)back:(id)sender;
-- (IBAction)send:(id)sender;
+@property (nonatomic, retain) UIImageView *userPhoto;
 - (void)showKeyboard;
 @end

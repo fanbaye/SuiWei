@@ -14,11 +14,4 @@
 
 @interface MainViewController : UIViewController <SNNetAccessDelegate, DisplayViewControllerDelegate, CategoryViewControllerDelegate, PostViewControllerDelegate>
 
-{
-    NSArray *_statuses;
-    
-}
-
-@property (nonatomic, retain) NSArray *statuses;
-
 @end

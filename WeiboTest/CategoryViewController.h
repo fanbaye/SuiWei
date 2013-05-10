@@ -15,13 +15,14 @@
 
 @end
 
-@interface CategoryViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIActionSheetDelegate>
+@interface CategoryViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIActionSheetDelegate, UIActionSheetDelegate>
 
 {
     id<CategoryViewControllerDelegate> _delegate;
 }
 
 @property (nonatomic, assign) id<CategoryViewControllerDelegate> delegate;
+
 - (void)updateUserInfo:(NSDictionary *)userInfo;
 
 @end

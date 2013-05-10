@@ -22,8 +22,6 @@
     BOOL _firstAppear;
 }
 
-@synthesize statuses = _statuses;
-
 - (void)dealloc
 {
     [_cvc release];
@@ -44,6 +42,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor blackColor];
     _isHideStatuses = NO;
     _firstAppear = YES;
 	// Do any additional setup after loading the view.
@@ -69,6 +68,7 @@
     sgrLeft.direction = UISwipeGestureRecognizerDirectionLeft;
     [self.view addGestureRecognizer:sgrLeft];
     [sgrLeft release];
+    
 }
 
 // 自动登陆
@@ -78,9 +78,16 @@
     if (_firstAppear) {
         SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
         [netAccess login];
+        
         _firstAppear = NO;
     }
-    
+}
+
+- (void)firstUpdate
+{
+    SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
+    [netAccess getUserInfo];
+    [_dvc firstUpdate];
 }
 
 
@@ -101,8 +108,6 @@
     if (!_isHideStatuses) {
         [UIView animateWithDuration:0.25 animations:^{
             _dvc.view.frame = CGRectMake(300, 0, 320, 460);
-        } completion:^(BOOL finished) {
-            _dvc.tableView.contentOffset = CGPointMake(0, 0);
         }];
         _isHideStatuses = YES;
     }
@@ -137,29 +142,17 @@
     
 }
 
-// 开始更新
-- (void)startAct
-{
-    [_dvc startAct];
-}
-
-// 更新结束
-- (void)stopAct
-{
-    [_dvc stopAct];
-}
-
 // 返回微博给display
 - (void)statuses:(NSArray *)array
 {
     [_dvc updateData:array];
 }
 
-// 返回用户信息给category
+// 返回用户信息给category和post
 - (void)userInfo:(NSDictionary *)dic
 {
-    _pvc.imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[dic objectForKey:@"profile_image_url"]]];
-    [_pvc.headPhoto setImage:[UIImage imageWithData:_pvc.imgData]];
+    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[dic objectForKey:@"profile_image_url"]]];
+    [_pvc.userPhoto setImage:[UIImage imageWithData:data]];
     [_cvc updateUserInfo:dic];
 }
 

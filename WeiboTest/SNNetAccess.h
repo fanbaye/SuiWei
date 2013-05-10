@@ -14,24 +14,17 @@
 
 - (void)userInfo:(NSDictionary *)dic;
 - (void)statuses:(NSArray *)array;
-- (void)startAct;
-- (void)stopAct;
+- (void)firstUpdate;
 
 @end
 
 @interface SNNetAccess : NSObject <SinaWeiboDelegate, SinaWeiboRequestDelegate>
 {
-    NSDictionary *_userInfo;
-    NSArray *_friendsStatuses;
-    NSArray *_statuses;
     
     id<SNNetAccessDelegate> _delegate;
 }
 
 + (SNNetAccess *)sharedNetAccess;
-@property (nonatomic, retain) NSDictionary *userInfo;
-@property (nonatomic, retain) NSArray *friendsStatuses;
-@property (nonatomic, retain) NSArray *statuses;
 @property (nonatomic, assign) id<SNNetAccessDelegate> delegate;
 
 - (void)login;

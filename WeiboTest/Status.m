@@ -14,16 +14,18 @@
 @synthesize contentStr = _contentStr;
 @synthesize authorStr = _authorStr;
 @synthesize timeStr = _timeStr;
-@synthesize imgData = _imgData;
+@synthesize imgStr = _imgStr;
 @synthesize sourceStr = _sourceStr;
+@synthesize imgData = _imgData;
 
 - (void)dealloc
 {
     [_contentStr release];
     [_authorStr release];
     [_timeStr release];
-    [_imgData release];
+    [_imgStr release];
     [_sourceStr release];
+    [_imgData release];
     [super dealloc];
 }
 
@@ -36,36 +38,44 @@
 
 - (CGFloat)heightForRow
 {
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     CGSize size = [self contentSize];
     float imgHeight = 0;
-    if (_imgData) {
-        imgHeight = 80+5;
+    if (_imgStr) {
+        imgHeight = cell.statusImage.frame.size.height+5;
     }
-    return 35+size.height+5+imgHeight+21+5;
+    return cell.labelContent.frame.origin.y+size.height+5+imgHeight+cell.labelPostSource.frame.size.height+5;
 }
 
 - (CGSize)contentSize
 {
-    WeiboCell *cell = (WeiboCell *)[[[NSBundle mainBundle] loadNibNamed:@"WeiboCell" owner:self options:nil] objectAtIndex:0];
-    return [_contentStr sizeWithFont:cell.content.font constrainedToSize:CGSizeMake(300, 1000) lineBreakMode:NSLineBreakByWordWrapping];
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
+    return [_contentStr sizeWithFont:cell.labelContent.font constrainedToSize:CGSizeMake(cell.labelContent.frame.size.width, 1000) lineBreakMode:NSLineBreakByWordWrapping];
+}
+
+- (CGRect)contentRect
+{
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
+    CGSize size = [self contentSize];
+    return CGRectMake(cell.labelContent.frame.origin.x, cell.labelContent.frame.origin.y, size.width, size.height);
 }
 
 - (CGRect)imageRect
 {
-    WeiboCell *cell = (WeiboCell *)[[[NSBundle mainBundle] loadNibNamed:@"WeiboCell" owner:self options:nil] objectAtIndex:0];
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     CGSize size = [self contentSize];
-    if (_imgData) {
-        return CGRectMake(10, cell.content.frame.origin.y+size.height+5, cell.img.frame.size.width, cell.img.frame.size.height);
+    if (_imgStr) {
+        return CGRectMake(cell.statusImage.frame.origin.x, cell.labelContent.frame.origin.y+size.height+5, cell.statusImage.frame.size.width, cell.statusImage.frame.size.height);
     }else{
-        return CGRectMake(0, cell.content.frame.origin.y+size.height, 0, 0);
+        return CGRectMake(0, cell.labelContent.frame.origin.y+size.height, 0, 0);
     }
 }
 
 - (CGRect)sourceRect
 {
-    WeiboCell *cell = (WeiboCell *)[[[NSBundle mainBundle] loadNibNamed:@"WeiboCell" owner:self options:nil] objectAtIndex:0];
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     CGRect rect = [self imageRect];
-    return CGRectMake(10, rect.origin.y+rect.size.height+5, cell.source.frame.size.width, cell.source.frame.size.height);
+    return CGRectMake(cell.labelPostSource.frame.origin.x, rect.origin.y+rect.size.height+5, cell.labelPostSource.frame.size.width, cell.labelPostSource.frame.size.height);
 }
 
 @end

@@ -8,6 +8,7 @@
 
 #import "CategoryViewController.h"
 #import "SNNetAccess.h"
+#import "SNAppDelegate.h"
 
 @interface CategoryViewController ()
 
@@ -35,11 +36,13 @@
 {
     [super viewDidLoad];
     _isHideStatuses = NO;
+    
     NSArray *array1 = [[NSArray alloc] initWithObjects:@"全部微博", @"提到你的", @"评论", @"收藏", nil];
     NSArray *array2 = [[NSArray alloc] initWithObjects:@"好友", @"娱乐", @"秘密关注", nil];
     _data = [[NSArray alloc] initWithObjects:array1, array2, nil];
     [array1 release];
     [array2 release];
+    
     self.view.backgroundColor = [UIColor yellowColor];
     [self.navigationController setNavigationBarHidden:YES];
     
@@ -50,7 +53,7 @@
     _tableView.dataSource = self;
     [self.view addSubview:_tableView];
     
-    _headView = (UIView *)[[[NSBundle mainBundle] loadNibNamed:@"WeiboCell" owner:self options:nil] objectAtIndex:1];
+    _headView = (UIView *)[[[NSBundle mainBundle] loadNibNamed:@"headView" owner:self options:nil] objectAtIndex:0];
     _headView.frame = CGRectMake(0, 0, 300, 100);
     
     UIImageView *photo = (UIImageView *)[_headView viewWithTag:1];
@@ -89,8 +92,19 @@
         [_delegate showStatuses];
     }else if (sender.view.tag == 1){
         UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"退出登录" otherButtonTitles:nil, nil];
+        as.delegate = self;
         as.actionSheetStyle = UIActionSheetStyleBlackOpaque;
         [as showInView:self.view];
+    }
+}
+
+#pragma mark - UIActionSheet Delegate Methods
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 0) {
+        SNAppDelegate *snDelegate = (SNAppDelegate *)[UIApplication sharedApplication].delegate;
+        SinaWeibo *sinaweibo = snDelegate.sinaweibo;
+        [sinaweibo logOut];
     }
 }
 
@@ -104,8 +118,10 @@
     UIImageView *photo = (UIImageView *)[_headView viewWithTag:1];
     photo.layer.cornerRadius = 23;
     photo.layer.masksToBounds = YES;
-    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[userInfo objectForKey:@"profile_image_url"]]];
-    [photo setImage:[UIImage imageWithData:data]];
+    [photo setImage:[UIImage imageWithData:
+                     [NSData dataWithContentsOfURL:
+                      [NSURL URLWithString:
+                       [userInfo objectForKey:@"profile_image_url"]]]]];
     
     // 所在地
     UILabel *userLocation = (UILabel *)[_headView viewWithTag:3];
@@ -123,6 +139,8 @@
     UILabel *userStatusesCount = (UILabel *)[_headView viewWithTag:6];
     userStatusesCount.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"statuses_count"]];
 }
+
+#pragma mark - TableView Delegate Methods
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -153,7 +171,7 @@
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     if (section == 1) {
-        return @"分组";
+        return @"好友分组";
     }else{
         return nil;
     }
@@ -161,7 +179,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == 0) {
+    if (indexPath.row == 0 && indexPath.section == 0) {
         SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
         [netAccess getFriendsTime];
         [_delegate showStatuses];

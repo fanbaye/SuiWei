@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ASIHTTPRequest.h"
+#import "EGORefreshTableHeaderView.h"
 
 @protocol  DisplayViewControllerDelegate <NSObject>
 
@@ -14,19 +16,14 @@
 
 @end
 
-@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ASIHTTPRequestDelegate, EGORefreshTableHeaderDelegate>
 
 {
-    NSArray *_statuses;
     id<DisplayViewControllerDelegate> _delegate;
-    UITableView *_tableView;
 }
 
-@property (nonatomic, retain) UITableView *tableView;
 @property (nonatomic, assign) id<DisplayViewControllerDelegate> delegate;
-@property (nonatomic, retain) NSArray *statuses;
 - (void)updateData:(NSArray *)data;
-- (void)startAct;
-- (void)stopAct;
+- (void)firstUpdate;
 
 @end

@@ -14,19 +14,22 @@
     NSString *_contentStr;
     NSString *_authorStr;
     NSString *_timeStr;
-    NSData *_imgData;
+    NSString *_imgStr;
     NSString *_sourceStr;
+    NSData *_imgData;
 }
 
 @property (nonatomic, copy) NSString *contentStr;
 @property (nonatomic, copy) NSString *authorStr;
 @property (nonatomic, copy) NSString *timeStr;
-@property (nonatomic, retain) NSData *imgData;
+@property (nonatomic, copy) NSString *imgStr;
 @property (nonatomic, copy) NSString *sourceStr;
+@property (nonatomic, retain) NSData *imgData;
 
 - (NSString *)getSourceStr;
 - (CGFloat)heightForRow;
 - (CGSize)contentSize;
+- (CGRect)contentRect;
 - (CGRect)imageRect;
 - (CGRect)sourceRect;
 

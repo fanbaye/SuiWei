@@ -12,9 +12,6 @@
 
 @implementation SNNetAccess
 
-@synthesize userInfo = _userInfo;
-@synthesize friendsStatuses = _friendsStatuses;
-@synthesize statuses = _statuses;
 @synthesize delegate = _delegate;
 
 static SNNetAccess *_netAccess;
@@ -26,20 +23,14 @@ static SNNetAccess *_netAccess;
     return _netAccess;
 }
 
-- (void)dealloc
-{
-    [_userInfo release]; _userInfo = nil;
-    [_statuses release]; _statuses = nil;
-    [_friendsStatuses release]; _friendsStatuses = nil;
-    [super dealloc];
-}
-
 - (SinaWeibo *)sinaweibo
 {
     SNAppDelegate *delegate = (SNAppDelegate *)[UIApplication sharedApplication].delegate;
     return delegate.sinaweibo;
 }
 
+
+#pragma mark - Setting AuthData
 // 移除用户数据
 - (void)removeAuthData
 {
@@ -61,16 +52,13 @@ static SNNetAccess *_netAccess;
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+#pragma mark - Weibo Login&logout
 
 // 登入
 - (void)login
 {
-    [_userInfo release], _userInfo = nil;
-    [_statuses release], _statuses = nil;
-    
     SinaWeibo *sinaweibo = [self sinaweibo];
     [sinaweibo logIn];
-
 }
 
 // 登出
@@ -80,17 +68,7 @@ static SNNetAccess *_netAccess;
     [sinaweibo logOut];
 }
 
-
-// 全部微博
-- (void)getFriendsTime
-{
-    [_delegate startAct];
-    SinaWeibo *sinaweibo = [self sinaweibo];
-    [sinaweibo requestWithURL:@"statuses/friends_timeline.json"
-                       params:[NSMutableDictionary dictionaryWithObject:sinaweibo.userID forKey:@"uid"]
-                   httpMethod:@"GET"
-                     delegate:self];
-}
+#pragma mark - Get Weibo Infomations
 
 // 用户信息
 - (void)getUserInfo
@@ -100,23 +78,43 @@ static SNNetAccess *_netAccess;
                        params:[NSMutableDictionary dictionaryWithObject:sinaweibo.userID forKey:@"uid"]
                    httpMethod:@"GET"
                      delegate:self];
+    NSLog(@"send users/show.json");
 }
 
 // 用户自己的微博
 - (void)getTimeline
 {
-    [_delegate startAct];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
     SinaWeibo *sinaweibo = [self sinaweibo];
     [sinaweibo requestWithURL:@"statuses/user_timeline.json"
                        params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid", nil]
                    httpMethod:@"GET"
                      delegate:self];
+    NSLog(@"send statuses/user_timeline.json");
+}
+
+
+// 全部微博
+- (void)getFriendsTime
+{
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
+    SinaWeibo *sinaweibo = [self sinaweibo];
+    [sinaweibo requestWithURL:@"statuses/friends_timeline.json"
+                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid", nil]
+                   httpMethod:@"GET"
+                     delegate:self];
+    NSLog(@"send statuses/friends_timeline.json");
 }
 
 // 发微博
 - (void)postText:(NSString *)text
 {
+    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     SinaWeibo *sinaweibo = [self sinaweibo];
+    
     [sinaweibo requestWithURL:@"statuses/update.json"
                        params:[NSMutableDictionary dictionaryWithObjectsAndKeys:text, @"status", nil]
                    httpMethod:@"POST"
@@ -127,6 +125,8 @@ static SNNetAccess *_netAccess;
 // 发带图片微博
 - (void)postText:(NSString *)text AndImage:(UIImage *)image
 {
+    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     SinaWeibo *sinaweibo = [self sinaweibo];
     
     [sinaweibo requestWithURL:@"statuses/upload.json"
@@ -137,90 +137,9 @@ static SNNetAccess *_netAccess;
                      delegate:self];
 }
 
-// 返回结果
-- (void)request:(SinaWeiboRequest *)request didFinishLoadingWithResult:(id)result
-{
-    // 用户信息
-    if ([request.url hasSuffix:@"users/show.json"])
-    {
-        [_userInfo release];
-        _userInfo = [result retain];
-        [_delegate userInfo:_userInfo];
-    }
-    
-    // 用户微博
-    else if ([request.url hasSuffix:@"statuses/user_timeline.json"])
-    {
-        [_statuses release];
-        _statuses = [[result objectForKey:@"statuses"] retain];
-        NSMutableArray *readyStatuses = [[NSMutableArray alloc] initWithCapacity:20];
-        for (int i=0; i<[_statuses count]; i++) {
-            Status *oneStatus = [[Status alloc] init];
-            NSDictionary *dic = [_statuses objectAtIndex:i];
-            oneStatus.contentStr = [dic objectForKey:@"text"];
-            oneStatus.authorStr = [[dic objectForKey:@"user"] objectForKey:@"screen_name"];
-            oneStatus.timeStr = [dic objectForKey:@"created_at"];
-            oneStatus.imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[dic objectForKey:@"thumbnail_pic"]]];
-            oneStatus.sourceStr = [dic objectForKey:@"source"];
-            [readyStatuses addObject:oneStatus];
-            [oneStatus release];
-        }
-        [_delegate statuses:readyStatuses];
-        [_delegate stopAct];
-        
-    }
-    
-    // 发微博
-    else if ([request.url hasSuffix:@"statuses/update.json"])
-    {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Alert"
-                                                            message:[NSString stringWithFormat:@"Post status \"%@\" succeed!", [result objectForKey:@"text"]]
-                                                           delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-        [alertView show];
-        [alertView release];
-        
-    }
-    
-    // 发带图片的微博
-    else if ([request.url hasSuffix:@"statuses/upload.json"])
-    {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Alert"
-                                                            message:[NSString stringWithFormat:@"Post image status \"%@\" succeed!", [result objectForKey:@"text"]]
-                                                           delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-        [alertView show];
-        [alertView release];
-        
-    }
-    
-    // 全部微博
-    else if ([request.url hasSuffix:@"statuses/friends_timeline.json"]){
-        [_friendsStatuses release];
-        _friendsStatuses = [[result objectForKey:@"statuses"] retain];
-        NSMutableArray *readyStatuses = [[NSMutableArray alloc] initWithCapacity:20];
-        for (int i=0; i<[_friendsStatuses count]; i++) {
-            Status *oneStatus = [[Status alloc] init];
-            NSDictionary *dic = [_friendsStatuses objectAtIndex:i];
-            oneStatus.contentStr = [dic objectForKey:@"text"];
-            oneStatus.authorStr = [[dic objectForKey:@"user"] objectForKey:@"screen_name"];
-            oneStatus.timeStr = [dic objectForKey:@"created_at"];
-            oneStatus.imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[dic objectForKey:@"thumbnail_pic"]]];
-            oneStatus.sourceStr = [dic objectForKey:@"source"];
-            [readyStatuses addObject:oneStatus];
-            [oneStatus release];
-        }
-        [_delegate statuses:readyStatuses];
-        [_delegate stopAct];
-    }
-    
-//    NSLog(@"%@", result);
-}
+#pragma mark - Setting InterfaceOrientation
 
-/*
- 
- *****************************************华丽的分割线**************************************
- 
- */
-
+// 支持屏幕翻转
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;
@@ -232,14 +151,14 @@ static SNNetAccess *_netAccess;
 - (void)sinaweiboDidLogIn:(SinaWeibo *)sinaweibo
 {
     [self storeAuthData];
-    [self getFriendsTime];
-    [self getUserInfo];
+    [_delegate firstUpdate];
 }
 
 // 等出之后执行
 - (void)sinaweiboDidLogOut:(SinaWeibo *)sinaweibo
 {
     [self removeAuthData];
+    [self login];
 }
 
 // 登入取消时执行
@@ -266,36 +185,54 @@ static SNNetAccess *_netAccess;
 // 获取数据各种失败
 - (void)request:(SinaWeiboRequest *)request didFailWithError:(NSError *)error
 {
-    if ([request.url hasSuffix:@"users/show.json"])
-    {
-        [_userInfo release], _userInfo = nil;
-    }
-    else if ([request.url hasSuffix:@"statuses/user_timeline.json"])
-    {
-        [_statuses release], _statuses = nil;
-    }
-    else if ([request.url hasSuffix:@"statuses/update.json"])
-    {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Alert"
-                                                            message:@"Post status failed!"
-                                                           delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-        [alertView show];
-        [alertView release];
-        
+    if ([request.url hasSuffix:@"users/show.json"]){
+        NSLog(@"get userInfo failed");
+    }else if ([request.url hasSuffix:@"statuses/user_timeline.json"]
+             || [request.url hasSuffix:@"statuses/friends_timeline.json"]){
+        NSLog(@"get statuses failed");
+    }else if ([request.url hasSuffix:@"statuses/update.json"]){
         NSLog(@"Post status failed with error : %@", error);
-    }
-    else if ([request.url hasSuffix:@"statuses/upload.json"])
-    {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Alert"
-                                                            message:@"Post image status failed!"
-                                                           delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-        [alertView show];
-        [alertView release];
-        
+    }else if ([request.url hasSuffix:@"statuses/upload.json"]){
         NSLog(@"Post image status failed with error : %@", error);
     }
-    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
+// 返回结果
+- (void)request:(SinaWeiboRequest *)request didFinishLoadingWithResult:(id)result
+{
+    // 用户信息
+    if ([request.url hasSuffix:@"users/show.json"]){
+        [_delegate userInfo:[[result retain] autorelease]];
+    }
+    
+    // 用户自己的微博 或 全部微博
+    else if ([request.url hasSuffix:@"statuses/user_timeline.json"] || [request.url hasSuffix:@"statuses/friends_timeline.json"]){
+        
+        NSMutableArray *readyStatuses = [[NSMutableArray alloc] initWithCapacity:20];
+        NSArray *statuses = [[result objectForKey:@"statuses"] retain];
+        for (NSDictionary *dic in statuses) {
+            Status *oneStatus = [[Status alloc] init];
+            oneStatus.contentStr = [dic objectForKey:@"text"];
+            oneStatus.authorStr = [[dic objectForKey:@"user"] objectForKey:@"screen_name"];
+            oneStatus.timeStr = [dic objectForKey:@"created_at"];
+            oneStatus.imgStr = [dic objectForKey:@"thumbnail_pic"];
+            oneStatus.sourceStr = [dic objectForKey:@"source"];
+            [readyStatuses addObject:oneStatus];
+            [oneStatus release];
+        }
+        [statuses release];
+        [_delegate statuses:readyStatuses];
+        [readyStatuses release];
+        
+    }
+    
+    // 发微博
+    else if ([request.url hasSuffix:@"statuses/update.json"] || [request.url hasSuffix:@"statuses/upload.json"]){
+        
+    }
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    NSLog(@"%@", request.url);
+}
 
 @end

@@ -9,10 +9,18 @@
 #import <UIKit/UIKit.h>
 
 @interface WeiboCell : UITableViewCell
-@property (retain, nonatomic) IBOutlet UILabel *content;
-@property (retain, nonatomic) IBOutlet UILabel *author;
-@property (retain, nonatomic) IBOutlet UILabel *time;
-@property (retain, nonatomic) IBOutlet UILabel *source;
-@property (retain, nonatomic) IBOutlet UIImageView *img;
+
+{
+    UILabel *_labelContent;
+    UILabel *_labelAuthor;
+    UILabel *_labelPostTime;
+    UILabel *_labelPostSource;
+    UIImageView *_statusImage;
+}
+@property (retain, nonatomic) UILabel *labelContent;
+@property (retain, nonatomic) UILabel *labelAuthor;
+@property (retain, nonatomic) UILabel *labelPostTime;
+@property (retain, nonatomic) UILabel *labelPostSource;
+@property (retain, nonatomic) UIImageView *statusImage;
 
 @end
