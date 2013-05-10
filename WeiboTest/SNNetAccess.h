@@ -13,8 +13,8 @@
 @protocol SNNetAccessDelegate <NSObject>
 
 - (void)userInfo:(NSDictionary *)dic;
-- (void)statuses:(NSArray *)array;
-- (void)firstUpdate;
+- (void)updateStatuses;
+- (void)openApp;
 
 @end
 

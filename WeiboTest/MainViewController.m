@@ -83,11 +83,11 @@
     }
 }
 
-- (void)firstUpdate
+- (void)openApp
 {
     SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
     [netAccess getUserInfo];
-    [_dvc firstUpdate];
+    [_dvc openApp];
 }
 
 
@@ -143,9 +143,9 @@
 }
 
 // 返回微博给display
-- (void)statuses:(NSArray *)array
+- (void)updateStatuses
 {
-    [_dvc updateData:array];
+    [_dvc updateData];
 }
 
 // 返回用户信息给category和post

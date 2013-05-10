@@ -8,22 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Status : NSObject
-
-{
-    NSString *_contentStr;
-    NSString *_authorStr;
-    NSString *_timeStr;
-    NSString *_imgStr;
-    NSString *_sourceStr;
-    NSData *_imgData;
-}
+@interface WeiboStatus : NSObject
 
 @property (nonatomic, copy) NSString *contentStr;
 @property (nonatomic, copy) NSString *authorStr;
 @property (nonatomic, copy) NSString *timeStr;
 @property (nonatomic, copy) NSString *imgStr;
 @property (nonatomic, copy) NSString *sourceStr;
+@property (nonatomic, copy) NSString *idStr;
+
 @property (nonatomic, retain) NSData *imgData;
 
 - (NSString *)getSourceStr;

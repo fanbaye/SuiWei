@@ -8,8 +8,9 @@
 
 #import "DisplayViewController.h"
 #import "WeiboCell.h"
-#import "Status.h"
+#import "WeiboStatus.h"
 #import "SNNetAccess.h"
+#import "DatabaseManager.h"
 
 @interface DisplayViewController ()
 
@@ -47,6 +48,7 @@
 {
     [super viewDidLoad];
     _isReflesh = NO;
+    
 	// Do any additional setup after loading the view.
     
     [self.view.layer setShadowOffset:CGSizeMake(0, 5)];
@@ -67,6 +69,7 @@
     [_tableView addSubview:_headView];
     [_headView release];
     
+    // 滑动手势
     UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(sgrSlider)];
     sgr.direction = UISwipeGestureRecognizerDirectionRight;
     [self.view addGestureRecognizer:sgr];
@@ -74,8 +77,7 @@
 }
 
 
-
-- (void)firstUpdate
+- (void)openApp
 {
     _tableView.contentOffset = CGPointMake(0, -66);
     [self scrollViewDidEndDragging:_tableView willDecelerate:YES];
@@ -84,27 +86,25 @@
 // 收起表格
 - (void)sgrSlider
 {
+    
     [_delegate hideStatuses];
 }
 
-// 更新数据
-- (void)updateData:(NSArray *)array
+// 得到数据库的微博
+- (void)getStatusesFromDatabase
 {
-    self.statuses = array;
+    DatabaseManager *db = [[DatabaseManager alloc] init];
+    self.statuses = [db databaseAllStatuses];
+    [db databaseClose];
+    [db release];
     [_tableView reloadData];
+}
+
+// 更新数据
+- (void)updateData
+{
+    [self getStatusesFromDatabase];
     
-    int i = 0;
-    for (Status *st in _statuses) {
-        if (st.imgStr) {
-            NSURL *url = [NSURL URLWithString:st.imgStr];
-            ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-            request.delegate = self;
-            request.tag = i;
-            [request startAsynchronous];
-        }
-        i++;
-    }
-    _tableView.contentOffset = CGPointMake(0, 0);
     [_headView egoRefreshScrollViewDataSourceDidFinishedLoading:_tableView];
     _isReflesh = NO;
 }
@@ -144,8 +144,20 @@
 - (void)requestFinished:(ASIHTTPRequest *)request
 {
     NSData *data = request.responseData;
-    Status *st = [_statuses objectAtIndex:request.tag];
-    st.imgData = data;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *path = NSHomeDirectory();
+    WeiboStatus *status = [_statuses objectAtIndex:request.tag];
+    
+    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"documents/%@", status.idStr]];
+    
+    BOOL res = [fm createFileAtPath:path contents:data attributes:nil];
+    if (!res) {
+        NSLog(@"缓存图片失败");
+    }
+    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:request.tag inSection:0];
+    WeiboCell *cell = (WeiboCell *)[_tableView cellForRowAtIndexPath:indexPath];
+    [cell.statusImage setImage:[UIImage imageWithData:data]];
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)request
@@ -163,25 +175,40 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellName = @"cell";
-    WeiboCell *cell = [[[WeiboCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellName] autorelease];
+    WeiboCell *cell = [tableView dequeueReusableCellWithIdentifier:cellName];
     if (!cell) {
-        cell = (WeiboCell *)[[[NSBundle mainBundle] loadNibNamed:@"WeiboCell" owner:self options:nil] objectAtIndex:0];
+        cell =  [[[WeiboCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellName] autorelease];
     }
-    Status *st = [_statuses objectAtIndex:indexPath.row];
+    WeiboStatus *st = [_statuses objectAtIndex:indexPath.row];
     // 作者
-    cell.labelAuthor.text = [st authorStr];
+    cell.labelAuthor.text = st.authorStr;
     
     // 时间
-    cell.labelPostTime.text = [st timeStr];
+    cell.labelPostTime.text = st.timeStr;
     
     // 内容
-    cell.labelContent.text = [st contentStr];
+    cell.labelContent.text = st.contentStr;
     cell.labelContent.frame = [st contentRect];
     cell.labelContent.lineBreakMode = NSLineBreakByWordWrapping;
     cell.labelContent.numberOfLines = 50;
     
     // 图片
-    cell.statusImage.image = [UIImage imageWithData:[st imgData]];
+    cell.statusImage.image = nil;
+    if (st.imgStr) {
+        NSString *path = NSHomeDirectory();
+        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"documents/%@", st.idStr]];
+        NSFileManager *fm = [NSFileManager defaultManager];
+        BOOL res = [fm fileExistsAtPath:path];
+        if (res) {
+            cell.statusImage.image = [UIImage imageWithContentsOfFile:path];
+        }else{
+            NSURL *url = [NSURL URLWithString:st.imgStr];
+            ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
+            request.delegate = self;
+            request.tag = indexPath.row;
+            [request startAsynchronous];
+        }
+    }
     cell.statusImage.frame = [st imageRect];
     
     // 来源
@@ -193,7 +220,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    Status *st = [_statuses objectAtIndex:indexPath.row];
+    WeiboStatus *st = [_statuses objectAtIndex:indexPath.row];
     return [st heightForRow];
 }
 

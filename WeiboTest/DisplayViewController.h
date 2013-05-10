@@ -23,7 +23,7 @@
 }
 
 @property (nonatomic, assign) id<DisplayViewControllerDelegate> delegate;
-- (void)updateData:(NSArray *)data;
-- (void)firstUpdate;
+- (void)updateData;
+- (void)openApp;
 
 @end

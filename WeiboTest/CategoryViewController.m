@@ -9,6 +9,7 @@
 #import "CategoryViewController.h"
 #import "SNNetAccess.h"
 #import "SNAppDelegate.h"
+#import "DatabaseManager.h"
 
 @interface CategoryViewController ()
 
@@ -183,6 +184,11 @@
         SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
         [netAccess getFriendsTime];
         [_delegate showStatuses];
+    }else if (indexPath.row == 0 && indexPath.section == 1){
+        DatabaseManager *db = [[DatabaseManager alloc] init];
+        [db databaseDropTable];
+        [db databaseClose];
+        [db release];
     }
 }
 

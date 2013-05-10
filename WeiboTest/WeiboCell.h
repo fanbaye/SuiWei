@@ -10,13 +10,6 @@
 
 @interface WeiboCell : UITableViewCell
 
-{
-    UILabel *_labelContent;
-    UILabel *_labelAuthor;
-    UILabel *_labelPostTime;
-    UILabel *_labelPostSource;
-    UIImageView *_statusImage;
-}
 @property (retain, nonatomic) UILabel *labelContent;
 @property (retain, nonatomic) UILabel *labelAuthor;
 @property (retain, nonatomic) UILabel *labelPostTime;

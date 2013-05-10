@@ -8,7 +8,8 @@
 
 #import "SNNetAccess.h"
 #import "SNAppDelegate.h"
-#import "Status.h"
+#import "WeiboStatus.h"
+#import "DatabaseManager.h"
 
 @implementation SNNetAccess
 
@@ -99,12 +100,15 @@ static SNNetAccess *_netAccess;
 - (void)getFriendsTime
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    
+    DatabaseManager *db = [[DatabaseManager alloc] init];
+    NSString *maxId = [db databaseGetLastId];
     SinaWeibo *sinaweibo = [self sinaweibo];
     [sinaweibo requestWithURL:@"statuses/friends_timeline.json"
-                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid", nil]
+                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid",maxId , @"since_id", nil]
                    httpMethod:@"GET"
                      delegate:self];
+    [db databaseClose];
+    [db release];
     NSLog(@"send statuses/friends_timeline.json");
 }
 
@@ -151,13 +155,14 @@ static SNNetAccess *_netAccess;
 - (void)sinaweiboDidLogIn:(SinaWeibo *)sinaweibo
 {
     [self storeAuthData];
-    [_delegate firstUpdate];
+    [_delegate openApp];
 }
 
 // 等出之后执行
 - (void)sinaweiboDidLogOut:(SinaWeibo *)sinaweibo
 {
     [self removeAuthData];
+    NSLog(@"logout");
     [self login];
 }
 
@@ -208,22 +213,26 @@ static SNNetAccess *_netAccess;
     
     // 用户自己的微博 或 全部微博
     else if ([request.url hasSuffix:@"statuses/user_timeline.json"] || [request.url hasSuffix:@"statuses/friends_timeline.json"]){
-        
-        NSMutableArray *readyStatuses = [[NSMutableArray alloc] initWithCapacity:20];
+        DatabaseManager *db = [[DatabaseManager alloc] init];
         NSArray *statuses = [[result objectForKey:@"statuses"] retain];
         for (NSDictionary *dic in statuses) {
-            Status *oneStatus = [[Status alloc] init];
+            
+            WeiboStatus *oneStatus = [[WeiboStatus alloc] init];
             oneStatus.contentStr = [dic objectForKey:@"text"];
             oneStatus.authorStr = [[dic objectForKey:@"user"] objectForKey:@"screen_name"];
             oneStatus.timeStr = [dic objectForKey:@"created_at"];
             oneStatus.imgStr = [dic objectForKey:@"thumbnail_pic"];
             oneStatus.sourceStr = [dic objectForKey:@"source"];
-            [readyStatuses addObject:oneStatus];
+            oneStatus.idStr = [dic objectForKey:@"idstr"];
+            
+            [db databaseInsert:oneStatus];
             [oneStatus release];
         }
+        
+        [db databaseClose];
+        [db release];
         [statuses release];
-        [_delegate statuses:readyStatuses];
-        [readyStatuses release];
+        [_delegate updateStatuses];
         
     }
     

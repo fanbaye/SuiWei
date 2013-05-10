@@ -6,10 +6,10 @@
 //  Copyright (c) 2013 lucas. All rights reserved.
 //
 
-#import "Status.h"
+#import "WeiboStatus.h"
 #import "WeiboCell.h"
 
-@implementation Status
+@implementation WeiboStatus
 
 @synthesize contentStr = _contentStr;
 @synthesize authorStr = _authorStr;
@@ -17,6 +17,7 @@
 @synthesize imgStr = _imgStr;
 @synthesize sourceStr = _sourceStr;
 @synthesize imgData = _imgData;
+@synthesize idStr = _idStr;
 
 - (void)dealloc
 {
