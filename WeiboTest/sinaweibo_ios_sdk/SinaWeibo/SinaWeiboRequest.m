@@ -383,7 +383,7 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)theConnection 
 {
-	[self handleResponseData:responseData];
+    [self handleResponseData:responseData];
     
 	[responseData release];
 	responseData = nil;

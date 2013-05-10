@@ -9,14 +9,19 @@
 #import "SNAppDelegate.h"
 
 #import "SinaWeibo.h"
-#import "SNViewController.h"
+#import "MainViewController.h"
+#import "SNNetAccess.h"
 
 
 @implementation SNAppDelegate
 
+{
+    MainViewController *_viewController;
+}
+
 @synthesize sinaweibo;
 @synthesize window = _window;
-@synthesize viewController = _viewController;
+
 
 - (void)dealloc
 {
@@ -32,13 +37,13 @@
     // Override point for customization after application launch.
 //    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     
-    self.viewController = [[[SNViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.viewController];
-    self.window.rootViewController = nvc;
-    [nvc release];
+    _viewController = [[[MainViewController alloc] init] autorelease];
+    
+    self.window.rootViewController = _viewController;
+
     [self.window makeKeyAndVisible];
     
-    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:_viewController];
+    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:[SNNetAccess sharedNetAccess]];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *sinaweiboInfo = [defaults objectForKey:@"SinaWeiboAuthData"];
     if ([sinaweiboInfo objectForKey:@"AccessTokenKey"] && [sinaweiboInfo objectForKey:@"ExpirationDateKey"] && [sinaweiboInfo objectForKey:@"UserIDKey"])

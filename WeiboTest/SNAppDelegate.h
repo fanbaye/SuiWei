@@ -28,7 +28,6 @@
 #endif
 
 @class SinaWeibo;
-@class SNViewController;
 
 @interface SNAppDelegate : UIResponder <UIApplicationDelegate>
 {
@@ -37,7 +36,5 @@
 
 @property (readonly, nonatomic) SinaWeibo *sinaweibo;
 @property (strong, nonatomic) UIWindow *window;
-
-@property (strong, nonatomic) SNViewController *viewController;
 
 @end
