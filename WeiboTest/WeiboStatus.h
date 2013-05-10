@@ -17,9 +17,8 @@
 @property (nonatomic, copy) NSString *sourceStr;
 @property (nonatomic, copy) NSString *idStr;
 
-@property (nonatomic, retain) NSData *imgData;
-
-- (NSString *)getSourceStr;
+- (NSString *)getSource;
+- (NSString *)getTime;
 - (CGFloat)heightForRow;
 - (CGSize)contentSize;
 - (CGRect)contentRect;

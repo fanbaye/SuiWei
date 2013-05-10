@@ -14,9 +14,8 @@
 
 - (void)dealloc
 {
-    [_database release];
+    self.database = nil;
     [super dealloc];
-    return;
 }
 
 - (id)init
@@ -90,5 +89,6 @@
     [_database close];
     return;
 }
+
 
 @end

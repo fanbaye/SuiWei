@@ -7,25 +7,23 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FDTakeController.h"
 
 @protocol PostViewControllerDelegate <NSObject>
 
 - (void)hideEdit;
+- (void)postText:(NSString *)text;
+- (void)postText:(NSString *)text AndImage:(UIImage *)image;
 
 @end
 
-@interface PostViewController : UIViewController <UITextViewDelegate, FDTakeDelegate>
+@interface PostViewController : UIViewController <UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIActionSheetDelegate>
 
 {
     id<PostViewControllerDelegate> _delegate;
-    FDTakeController *_fdTakeController;
     UIImageView *_userPhoto;
-    
 }
 
 @property (nonatomic, assign) id<PostViewControllerDelegate> delegate;
-@property (nonatomic, retain) FDTakeController *fdTakeController;
 @property (nonatomic, retain) UIImageView *userPhoto;
 - (void)showKeyboard;
 @end

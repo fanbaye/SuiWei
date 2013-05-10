@@ -7,8 +7,8 @@
 //
 
 #import "CategoryViewController.h"
-#import "SNNetAccess.h"
 #import "SNAppDelegate.h"
+#import "SinaWeibo.h"
 #import "DatabaseManager.h"
 
 @interface CategoryViewController ()
@@ -22,6 +22,7 @@
     UITableView *_tableView;
     NSArray *_data;
     BOOL _isHideStatuses;
+    NSArray *_imageArray;
 }
 @synthesize delegate = _delegate;
 
@@ -30,6 +31,7 @@
     [_tableView release];
     [_data release];
     [_delegate release];
+    [_imageArray release];
     [super dealloc];
 }
 
@@ -43,6 +45,8 @@
     _data = [[NSArray alloc] initWithObjects:array1, array2, nil];
     [array1 release];
     [array2 release];
+    
+    _imageArray = [[NSArray alloc] initWithObjects:@"home.png", @"at.png", @"comment.png", @"favourite.png", nil];
     
     self.view.backgroundColor = [UIColor yellowColor];
     [self.navigationController setNavigationBarHidden:YES];
@@ -88,8 +92,7 @@
         
         sender.view.backgroundColor = [UIColor whiteColor];
         
-        SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
-        [netAccess getTimeline];
+        [_delegate getFriendsTime];
         [_delegate showStatuses];
     }else if (sender.view.tag == 1){
         UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"退出登录" otherButtonTitles:nil, nil];
@@ -164,7 +167,7 @@
     cell.textLabel.font = [UIFont fontWithName:@"Helvetica" size:16];
     cell.textLabel.textColor = [UIColor grayColor];
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    cell.imageView.image = [UIImage imageNamed:@"sub"];
+    cell.imageView.image = [UIImage imageNamed:[_imageArray objectAtIndex:indexPath.row]];
     cell.selectionStyle = UITableViewCellSelectionStyleGray;
     return cell;
 }
@@ -181,8 +184,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.row == 0 && indexPath.section == 0) {
-        SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
-        [netAccess getFriendsTime];
+        [_delegate getFriendsTime];
         [_delegate showStatuses];
     }else if (indexPath.row == 0 && indexPath.section == 1){
         DatabaseManager *db = [[DatabaseManager alloc] init];

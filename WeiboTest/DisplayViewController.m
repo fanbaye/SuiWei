@@ -9,8 +9,8 @@
 #import "DisplayViewController.h"
 #import "WeiboCell.h"
 #import "WeiboStatus.h"
-#import "SNNetAccess.h"
 #import "DatabaseManager.h"
+#import "NSString+Hashing.h"
 
 @interface DisplayViewController ()
 
@@ -70,7 +70,7 @@
     [_headView release];
     
     // 滑动手势
-    UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(sgrSlider)];
+    UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hideStatuses)];
     sgr.direction = UISwipeGestureRecognizerDirectionRight;
     [self.view addGestureRecognizer:sgr];
     [sgr release];
@@ -81,12 +81,12 @@
 {
     _tableView.contentOffset = CGPointMake(0, -66);
     [self scrollViewDidEndDragging:_tableView willDecelerate:YES];
+    [self getStatusesFromDatabase];
 }
 
 // 收起表格
-- (void)sgrSlider
+- (void)hideStatuses
 {
-    
     [_delegate hideStatuses];
 }
 
@@ -117,8 +117,7 @@
 
 - (void)egoRefreshTableHeaderDidTriggerRefresh:(EGORefreshTableHeaderView *)view
 {
-    SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
-    [netAccess getFriendsTime];
+    [_delegate getFriendsTime];
     _isReflesh = YES;
 }
 
@@ -144,13 +143,10 @@
 - (void)requestFinished:(ASIHTTPRequest *)request
 {
     NSData *data = request.responseData;
-    NSFileManager *fm = [NSFileManager defaultManager];
     NSString *path = NSHomeDirectory();
-    WeiboStatus *status = [_statuses objectAtIndex:request.tag];
-    
-    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"documents/%@", status.idStr]];
-    
-    BOOL res = [fm createFileAtPath:path contents:data attributes:nil];
+    NSString *str = [NSString stringWithFormat:@"%@", request.url];
+    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [str MD5Hash]]];
+    BOOL res = [data writeToFile:path atomically:NO];
     if (!res) {
         NSLog(@"缓存图片失败");
     }
@@ -184,7 +180,7 @@
     cell.labelAuthor.text = st.authorStr;
     
     // 时间
-    cell.labelPostTime.text = st.timeStr;
+    cell.labelPostTime.text = [st getTime];
     
     // 内容
     cell.labelContent.text = st.contentStr;
@@ -196,7 +192,7 @@
     cell.statusImage.image = nil;
     if (st.imgStr) {
         NSString *path = NSHomeDirectory();
-        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"documents/%@", st.idStr]];
+        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [st.imgStr MD5Hash]]];
         NSFileManager *fm = [NSFileManager defaultManager];
         BOOL res = [fm fileExistsAtPath:path];
         if (res) {
@@ -204,6 +200,7 @@
         }else{
             NSURL *url = [NSURL URLWithString:st.imgStr];
             ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
+            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy;
             request.delegate = self;
             request.tag = indexPath.row;
             [request startAsynchronous];
@@ -212,7 +209,7 @@
     cell.statusImage.frame = [st imageRect];
     
     // 来源
-    cell.labelPostSource.text = [st getSourceStr];
+    cell.labelPostSource.text = [st getSource];
     cell.labelPostSource.frame = [st sourceRect];
     
     return cell;

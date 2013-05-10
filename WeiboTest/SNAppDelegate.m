@@ -10,7 +10,6 @@
 
 #import "SinaWeibo.h"
 #import "MainViewController.h"
-#import "SNNetAccess.h"
 
 
 @implementation SNAppDelegate
@@ -43,7 +42,7 @@
 
     [self.window makeKeyAndVisible];
     
-    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:[SNNetAccess sharedNetAccess]];
+    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:_viewController];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *sinaweiboInfo = [defaults objectForKey:@"SinaWeiboAuthData"];
     if ([sinaweiboInfo objectForKey:@"AccessTokenKey"] && [sinaweiboInfo objectForKey:@"ExpirationDateKey"] && [sinaweiboInfo objectForKey:@"UserIDKey"])

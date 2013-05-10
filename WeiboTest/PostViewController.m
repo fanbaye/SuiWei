@@ -7,7 +7,6 @@
 //
 
 #import "PostViewController.h"
-#import "SNNetAccess.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
 @interface PostViewController ()
@@ -24,7 +23,6 @@
 }
 
 @synthesize delegate = _delegate;
-@synthesize fdTakeController = _fdTakeController;
 @synthesize userPhoto = _userPhoto;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -85,11 +83,6 @@
     [postBtn addTarget:self action:@selector(btnClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:postBtn];
     
-    _fdTakeController = [[FDTakeController alloc] init];
-    _fdTakeController.delegate = self;
-    
-    
-    
     UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(sgrSlider)];
     sgr.direction = UISwipeGestureRecognizerDirectionDown;
     [self.view addGestureRecognizer:sgr];
@@ -108,18 +101,52 @@
     if (sender.tag == 0) {
         [self sgrSlider];
     }else if (sender.tag == 1){
-        SNNetAccess *netAccess = [SNNetAccess sharedNetAccess];
-        
         if (_havePhoto) {
-            [netAccess postText:_editTextView.text AndImage:_selectPhoto.image];
+            [_delegate postText:_editTextView.text AndImage:_selectPhoto.image];
         }else{
-            [netAccess postText:_editTextView.text];
+            [_delegate postText:_editTextView.text];
         }
         _havePhoto = NO;
     }else if (sender.tag == 2){
         [_editTextView resignFirstResponder];
-        [_fdTakeController takePhotoOrChooseFromLibrary];
+        UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:@"请选择图片来源" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"相机" otherButtonTitles:@"相册", nil];
+        as.delegate = self;
+        [as showInView:self.view];
+        [as release];
     }
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 2) {
+        return;
+    }
+    UIImagePickerController *pc = [[UIImagePickerController alloc] init];
+    pc.delegate = self;
+    if (buttonIndex == 0) {
+        pc.sourceType = UIImagePickerControllerSourceTypeCamera;
+    }
+    [self presentViewController:pc animated:YES completion:^{
+        
+    }];
+    [pc release];
+}
+
+#pragma mark - ImagePicker Delegate Methods
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    _selectPhoto.image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    _havePhoto = YES;
+    [picker dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [picker dismissViewControllerAnimated:YES completion:^{
+        
+    }];
 }
 
 - (void)showKeyboard
@@ -136,18 +163,6 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (void)dealloc
-{
-    [_fdTakeController release];
-    [super dealloc];
-}
-
-- (void)takeController:(FDTakeController *)controller gotPhoto:(UIImage *)photo withInfo:(NSDictionary *)info
-{
-    [_selectPhoto setImage:photo];
-    _havePhoto = YES;
 }
 
 @end

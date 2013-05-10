@@ -13,6 +13,7 @@
 @protocol  DisplayViewControllerDelegate <NSObject>
 
 - (void)hideStatuses;
+- (void)getFriendsTime;
 
 @end
 

@@ -7,11 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SNNetAccess.h"
 #import "DisplayViewController.h"
 #import "CategoryViewController.h"
 #import "PostViewController.h"
+#import "SinaWeibo.h"
+#import "SinaWeiboRequest.h"
 
-@interface MainViewController : UIViewController <SNNetAccessDelegate, DisplayViewControllerDelegate, CategoryViewControllerDelegate, PostViewControllerDelegate>
+@interface MainViewController : UIViewController <DisplayViewControllerDelegate, CategoryViewControllerDelegate, PostViewControllerDelegate, SinaWeiboDelegate, SinaWeiboRequestDelegate>
 
 @end

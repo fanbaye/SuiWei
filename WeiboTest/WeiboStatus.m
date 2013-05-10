@@ -16,21 +16,45 @@
 @synthesize timeStr = _timeStr;
 @synthesize imgStr = _imgStr;
 @synthesize sourceStr = _sourceStr;
-@synthesize imgData = _imgData;
 @synthesize idStr = _idStr;
 
 - (void)dealloc
 {
-    [_contentStr release];
-    [_authorStr release];
-    [_timeStr release];
-    [_imgStr release];
-    [_sourceStr release];
-    [_imgData release];
+    self.contentStr = nil;
+    self.authorStr = nil;
+    self.timeStr = nil;
+    self.imgStr = nil;
+    self.sourceStr = nil;
+    self.idStr = nil;
     [super dealloc];
 }
 
-- (NSString *)getSourceStr
+- (NSString *)getTime
+{
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"EEE MMM dd HH:mm:ss +S yyyy"];
+    NSDate *date = [dateFormat dateFromString:_timeStr];
+    [dateFormat release];
+    NSTimeInterval timeInterval = [date timeIntervalSinceNow];
+    timeInterval = -timeInterval;
+    NSString *time = nil;
+    if (timeInterval < 10) {
+        time = @"10秒前";
+    }else if (timeInterval < 30){
+        time = @"30秒前";
+    }else if (timeInterval/60 < 60){
+        time = [NSString stringWithFormat:@"%d分钟前", (int)timeInterval/60];
+    }else if (timeInterval/3600 < 24){
+        time = [NSString stringWithFormat:@"%d小时前", (int)timeInterval/3600];
+    }else if (timeInterval/(3600*24) < 365){
+        time = [NSString stringWithFormat:@"%d天前", (int)timeInterval/(3600*24)];
+    }else{
+        time = [NSString stringWithFormat:@"%d年前", (int)timeInterval/(3600*24*365)];
+    }
+    return time;
+}
+
+- (NSString *)getSource
 {
     NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:@"<>"];
     NSArray *array = [_sourceStr componentsSeparatedByCharactersInSet:set];
@@ -54,6 +78,7 @@
     return [_contentStr sizeWithFont:cell.labelContent.font constrainedToSize:CGSizeMake(cell.labelContent.frame.size.width, 1000) lineBreakMode:NSLineBreakByWordWrapping];
 }
 
+#pragma mark - UIRect
 - (CGRect)contentRect
 {
     WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];

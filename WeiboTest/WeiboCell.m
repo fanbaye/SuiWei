@@ -56,9 +56,8 @@
         [_labelPostSource release];
         
         _statusImage.contentMode = UIViewContentModeLeft;
-//        _statusImage.clipsToBounds = YES;
         _labelPostSource.textAlignment = NSTextAlignmentRight;
-        _labelPostTime.textAlignment = NSTextAlignmentLeft;
+        _labelPostTime.textAlignment = NSTextAlignmentRight;
         _labelPostTime.textColor = [UIColor grayColor];
         _labelPostSource.textColor = [UIColor grayColor];
     }
