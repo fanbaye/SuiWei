@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "047972431734DC5400A8400A"
-               BuildableName = "WeiboTest.app"
-               BlueprintName = "WeiboTest"
-               ReferencedContainer = "container:WeiboTest.xcodeproj">
+               BuildableName = "SuiWei.app"
+               BlueprintName = "SuiWei"
+               ReferencedContainer = "container:SuiWei.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "047972431734DC5400A8400A"
-            BuildableName = "WeiboTest.app"
-            BlueprintName = "WeiboTest"
-            ReferencedContainer = "container:WeiboTest.xcodeproj">
+            BuildableName = "SuiWei.app"
+            BlueprintName = "SuiWei"
+            ReferencedContainer = "container:SuiWei.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "047972431734DC5400A8400A"
-            BuildableName = "WeiboTest.app"
-            BlueprintName = "WeiboTest"
-            ReferencedContainer = "container:WeiboTest.xcodeproj">
+            BuildableName = "SuiWei.app"
+            BlueprintName = "SuiWei"
+            ReferencedContainer = "container:SuiWei.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,9 +70,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "047972431734DC5400A8400A"
-            BuildableName = "WeiboTest.app"
-            BlueprintName = "WeiboTest"
-            ReferencedContainer = "container:WeiboTest.xcodeproj">
+            BuildableName = "SuiWei.app"
+            BlueprintName = "SuiWei"
+            ReferencedContainer = "container:SuiWei.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
