@@ -9,22 +9,22 @@
 #import <UIKit/UIKit.h>
 #import "ASIHTTPRequest.h"
 #import "EGORefreshTableHeaderView.h"
+#import "SinaWeibo.h"
+#import "SinaWeiboRequest.h"
 
 @protocol  DisplayViewControllerDelegate <NSObject>
 
-- (void)hideStatuses;
-- (void)getFriendsTime;
+- (void)hideStatusesPanel;
 
 @end
 
-@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ASIHTTPRequestDelegate, EGORefreshTableHeaderDelegate>
+@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ASIHTTPRequestDelegate, EGORefreshTableHeaderDelegate, SinaWeiboRequestDelegate>
 
 {
     id<DisplayViewControllerDelegate> _delegate;
 }
 
 @property (nonatomic, assign) id<DisplayViewControllerDelegate> delegate;
-- (void)updateData;
-- (void)openApp;
+- (void)getFriendsStatuses;
 
 @end

@@ -16,6 +16,9 @@
 @property (nonatomic, copy) NSString *imgStr;
 @property (nonatomic, copy) NSString *sourceStr;
 @property (nonatomic, copy) NSString *idStr;
+@property (nonatomic, copy) NSString *reContentStr;
+@property (nonatomic, copy) NSString *reAuthorStr;
+@property (nonatomic, copy) NSString *reImageStr;
 
 - (NSString *)getSource;
 - (NSString *)getTime;
@@ -23,6 +26,8 @@
 - (CGSize)contentSize;
 - (CGRect)contentRect;
 - (CGRect)imageRect;
+- (CGRect)retweetContentRect;
+- (CGRect)retweetImageRect;
 - (CGRect)sourceRect;
 
 @end

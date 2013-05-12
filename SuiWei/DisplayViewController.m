@@ -11,11 +11,11 @@
 #import "WeiboStatus.h"
 #import "DatabaseManager.h"
 #import "NSString+Hashing.h"
+#import "SNAppDelegate.h"
 
 @interface DisplayViewController ()
 
 @property (nonatomic, retain) NSArray *statuses;
-
 
 @end
 
@@ -32,7 +32,7 @@
 
 - (void)dealloc
 {
-    [_statuses release];
+    self.statuses = nil;
     [super dealloc];
 }
 
@@ -50,15 +50,18 @@
     [super viewDidLoad];
     _isReflesh = NO;
     
-	// Do any additional setup after loading the view.
-    
+    // 设置圆角和阴影
     [self.view.layer setShadowOffset:CGSizeMake(0, 5)];
     [self.view.layer setShadowRadius:4];
     [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
     [self.view.layer setShadowOpacity:1];
     
+    
     _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 460) style:UITableViewStylePlain];
-    _tableView.backgroundColor = [UIColor colorWithRed:(float)247/255 green:(float)247/255 blue:(float)247/255 alpha:1];
+    _tableView.backgroundColor = [UIColor colorWithRed:(float)247/255
+                                                 green:(float)247/255
+                                                  blue:(float)247/255
+                                                 alpha:1];
     _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     _tableView.dataSource = self;
     _tableView.delegate = self;
@@ -70,25 +73,20 @@
     [_tableView addSubview:_headView];
     [_headView release];
     
-    // 滑动手势
-    UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hideStatuses)];
+    // 滑动手势 - 隐藏table
+    UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hideStatusesPanel)];
     sgr.direction = UISwipeGestureRecognizerDirectionRight;
     [self.view addGestureRecognizer:sgr];
     [sgr release];
-}
-
-
-- (void)openApp
-{
-    _tableView.contentOffset = CGPointMake(0, -66);
-    [self scrollViewDidEndDragging:_tableView willDecelerate:YES];
+    
+    // 读取数据库
     [self getStatusesFromDatabase];
 }
 
-// 收起表格
-- (void)hideStatuses
+// 隐藏talbe
+- (void)hideStatusesPanel
 {
-    [_delegate hideStatuses];
+    [_delegate hideStatusesPanel];
 }
 
 // 得到数据库的微博
@@ -105,7 +103,6 @@
 - (void)updateData
 {
     [self getStatusesFromDatabase];
-    
     [_headView egoRefreshScrollViewDataSourceDidFinishedLoading:_tableView];
     _isReflesh = NO;
 }
@@ -118,7 +115,7 @@
 
 - (void)egoRefreshTableHeaderDidTriggerRefresh:(EGORefreshTableHeaderView *)view
 {
-    [_delegate getFriendsTime];
+    [self getFriendsStatuses];
     _isReflesh = YES;
 }
 
@@ -126,6 +123,7 @@
 {
     return [NSDate date];
 }
+
 
 #pragma mark - ScrollView Methods
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
@@ -140,13 +138,77 @@
     
 }
 
+#pragma mark - Weibo Delegate Methods
+- (SinaWeibo *)sinaweibo
+{
+    SNAppDelegate *delegate = (SNAppDelegate *)[UIApplication sharedApplication].delegate;
+    return delegate.sinaweibo;
+}
+
+// 全部微博
+- (void)getFriendsStatuses
+{
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    DatabaseManager *db = [[DatabaseManager alloc] init];
+    NSString *maxId = [db databaseGetLastId];
+    SinaWeibo *sinaweibo = [self sinaweibo];
+    [sinaweibo requestWithURL:@"statuses/friends_timeline.json"
+                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid",maxId , @"since_id", nil]
+                   httpMethod:@"GET"
+                     delegate:self];
+    [db databaseClose];
+    [db release];
+    NSLog(@"send friends_timeline.json");
+}
+
+- (void)request:(SinaWeiboRequest *)request didFailWithError:(NSError *)error
+{
+    NSLog(@"get friends_timeline failed");
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+}
+
+- (void)request:(SinaWeiboRequest *)request didFinishLoadingWithResult:(id)result
+{
+    DatabaseManager *db = [[DatabaseManager alloc] init];
+    NSArray *statuses = [[result objectForKey:@"statuses"] retain];
+    for (NSDictionary *dic in statuses) {
+        WeiboStatus *status = [[WeiboStatus alloc] init];
+        status.contentStr = [dic objectForKey:@"text"];
+        status.authorStr = [[dic objectForKey:@"user"] objectForKey:@"screen_name"];
+        status.timeStr = [dic objectForKey:@"created_at"];
+        status.imgStr = [dic objectForKey:@"thumbnail_pic"];
+        status.sourceStr = [dic objectForKey:@"source"];
+        status.idStr = [dic objectForKey:@"idstr"];
+        NSDictionary *reDic = [dic objectForKey:@"retweeted_status"];
+        if (dic) {
+            status.reAuthorStr = [[reDic objectForKey:@"user"] objectForKey:@"screen_name"];
+            status.reContentStr = [reDic objectForKey:@"text"];
+            status.reImageStr = [reDic objectForKey:@"thumbnail_pic"];
+        }else{
+            status.reImageStr = nil;
+            status.reContentStr = nil;
+            status.reAuthorStr = nil;
+        }
+        [db databaseInsert:status];
+        [status release];
+    }
+    [db databaseClose];
+    [db release];
+    [statuses release];
+    
+    [self updateData];
+    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    NSLog(@"get friends_timeline success");
+}
+
 #pragma mark - ASIHTTPRequest Delegate Methods
 - (void)requestFinished:(ASIHTTPRequest *)request
 {
     NSData *data = request.responseData;
     NSString *path = NSHomeDirectory();
-    NSString *str = [NSString stringWithFormat:@"%@", request.url];
-    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [str MD5Hash]]];
+    NSString *urlStr = [NSString stringWithFormat:@"%@", request.url];
+    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [urlStr MD5Hash]]];
     BOOL res = [data writeToFile:path atomically:NO];
     if (!res) {
         NSLog(@"缓存图片失败");
@@ -154,7 +216,13 @@
     
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:request.tag inSection:0];
     WeiboCell *cell = (WeiboCell *)[_tableView cellForRowAtIndexPath:indexPath];
-    [cell.statusImage setImage:[UIImage imageWithData:data]];
+    WeiboStatus *status = [_statuses objectAtIndex:request.tag];
+    if (status.imgStr) {
+        [cell.statusImage setImage:[UIImage imageWithData:data]];
+    }else{
+        [cell.retweetImageView setImage:[UIImage imageWithData:data]];
+    }
+
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)request
@@ -175,19 +243,14 @@
     WeiboCell *cell = [tableView dequeueReusableCellWithIdentifier:cellName];
     if (!cell) {
         cell =  [[[WeiboCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellName] autorelease];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     WeiboStatus *st = [_statuses objectAtIndex:indexPath.row];
-    // 作者
+    
     cell.labelAuthor.text = st.authorStr;
-    
-    // 时间
     cell.labelPostTime.text = [st getTime];
-    
-    // 内容
     cell.labelContent.text = st.contentStr;
     cell.labelContent.frame = [st contentRect];
-    cell.labelContent.lineBreakMode = NSLineBreakByWordWrapping;
-    cell.labelContent.numberOfLines = 50;
     
     // 图片
     cell.statusImage.image = nil;
@@ -201,13 +264,35 @@
         }else{
             NSURL *url = [NSURL URLWithString:st.imgStr];
             ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy;
+            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy | ASIDoNotReadFromCacheCachePolicy;
             request.delegate = self;
             request.tag = indexPath.row;
             [request startAsynchronous];
         }
     }
     cell.statusImage.frame = [st imageRect];
+    
+    cell.labelRetweetContent.text = [NSString stringWithFormat:@"@%@:%@", st.reAuthorStr, st.reContentStr];
+    cell.labelRetweetContent.frame = [st retweetContentRect];
+    
+    cell.retweetImageView.image = nil;
+    if (st.reImageStr) {
+        NSString *path = NSHomeDirectory();
+        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [st.reImageStr MD5Hash]]];
+        NSFileManager *fm = [NSFileManager defaultManager];
+        BOOL res = [fm fileExistsAtPath:path];
+        if (res) {
+            cell.retweetImageView.image = [UIImage imageWithContentsOfFile:path];
+        }else{
+            NSURL *url = [NSURL URLWithString:st.reImageStr];
+            ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
+            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy | ASIDoNotReadFromCacheCachePolicy;
+            request.delegate = self;
+            request.tag = indexPath.row;
+            [request startAsynchronous];
+        }
+    }
+    cell.retweetImageView.frame = [st retweetImageRect];
     
     // 来源
     cell.labelPostSource.text = [st getSource];

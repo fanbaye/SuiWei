@@ -7,23 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SinaWeibo.h"
+#import "SinaWeiboRequest.h"
+#import "DisplayViewController.h"
 
-@protocol CategoryViewControllerDelegate <NSObject>
-
-- (void)showStatuses;
-- (void)showEdit;
-- (void)getFriendsTime;
-
-@end
-
-@interface CategoryViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIActionSheetDelegate, UIActionSheetDelegate>
-
-{
-    id<CategoryViewControllerDelegate> _delegate;
-}
-
-@property (nonatomic, assign) id<CategoryViewControllerDelegate> delegate;
-
-- (void)updateUserInfo:(NSDictionary *)userInfo;
+@interface CategoryViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIActionSheetDelegate, UIAlertViewDelegate,DisplayViewControllerDelegate, SinaWeiboDelegate, SinaWeiboRequestDelegate>
 
 @end

@@ -12,10 +12,6 @@
 
 @interface DatabaseManager : NSObject
 
-{
-    FMDatabase *_database;
-}
-
 @property (nonatomic, retain) FMDatabase *database;
 
 - (BOOL)databaseInsert:(WeiboStatus *)status;

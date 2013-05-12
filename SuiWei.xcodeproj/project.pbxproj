@@ -57,7 +57,6 @@
 		04FFB864173D41190049AC9E /* headView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04FFB822173D41190049AC9E /* headView.xib */; };
 		04FFB865173D41190049AC9E /* home.png in Resources */ = {isa = PBXBuildFile; fileRef = 04FFB823173D41190049AC9E /* home.png */; };
 		04FFB866173D41190049AC9E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB824173D41190049AC9E /* main.m */; };
-		04FFB867173D41190049AC9E /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB826173D41190049AC9E /* MainViewController.m */; };
 		04FFB868173D41190049AC9E /* PostViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB828173D41190049AC9E /* PostViewController.m */; };
 		04FFB869173D41190049AC9E /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB82D173D41190049AC9E /* JSONKit.m */; };
 		04FFB86A173D41190049AC9E /* SinaWeibo.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 04FFB82F173D41190049AC9E /* SinaWeibo.bundle */; };
@@ -67,6 +66,7 @@
 		04FFB86E173D41190049AC9E /* SNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB838173D41190049AC9E /* SNAppDelegate.m */; };
 		04FFB870173D41190049AC9E /* WeiboCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB83C173D41190049AC9E /* WeiboCell.m */; };
 		04FFB871173D41190049AC9E /* WeiboStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 04FFB83E173D41190049AC9E /* WeiboStatus.m */; };
+		04FFB878173D4D710049AC9E /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 04FFB877173D4D710049AC9E /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -144,8 +144,6 @@
 		04FFB822173D41190049AC9E /* headView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = headView.xib; path = ../headView.xib; sourceTree = "<group>"; };
 		04FFB823173D41190049AC9E /* home.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = home.png; sourceTree = "<group>"; };
 		04FFB824173D41190049AC9E /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		04FFB825173D41190049AC9E /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
-		04FFB826173D41190049AC9E /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		04FFB827173D41190049AC9E /* PostViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostViewController.h; sourceTree = "<group>"; };
 		04FFB828173D41190049AC9E /* PostViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostViewController.m; sourceTree = "<group>"; };
 		04FFB82C173D41190049AC9E /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
@@ -166,6 +164,7 @@
 		04FFB83C173D41190049AC9E /* WeiboCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeiboCell.m; sourceTree = "<group>"; };
 		04FFB83D173D41190049AC9E /* WeiboStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeiboStatus.h; sourceTree = "<group>"; };
 		04FFB83E173D41190049AC9E /* WeiboStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeiboStatus.m; sourceTree = "<group>"; };
+		04FFB877173D4D710049AC9E /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +190,7 @@
 		0479723B1734DC5400A8400A = {
 			isa = PBXGroup;
 			children = (
+				04FFB877173D4D710049AC9E /* README.md */,
 				0407CA81173A0E510007812A /* updateInfo */,
 				04FFB7DD173D41190049AC9E /* SuiWei */,
 				047972461734DC5400A8400A /* Frameworks */,
@@ -232,7 +232,6 @@
 				04FFB801173D41190049AC9E /* EGOTableViewPullRefresh */,
 				04FFB813173D41190049AC9E /* FMDB */,
 				04FFB81E173D41190049AC9E /* Hash */,
-				04FFB829173D41190049AC9E /* SDWebImage */,
 				04FFB82A173D41190049AC9E /* sinaweibo_ios_sdk */,
 				04FFB837173D41190049AC9E /* SNAppDelegate.h */,
 				04FFB838173D41190049AC9E /* SNAppDelegate.m */,
@@ -240,16 +239,14 @@
 				04FFB83C173D41190049AC9E /* WeiboCell.m */,
 				04FFB83D173D41190049AC9E /* WeiboStatus.h */,
 				04FFB83E173D41190049AC9E /* WeiboStatus.m */,
-				04FFB825173D41190049AC9E /* MainViewController.h */,
-				04FFB826173D41190049AC9E /* MainViewController.m */,
-				04FFB827173D41190049AC9E /* PostViewController.h */,
-				04FFB828173D41190049AC9E /* PostViewController.m */,
-				04FFB7F6173D41190049AC9E /* CategoryViewController.h */,
-				04FFB7F7173D41190049AC9E /* CategoryViewController.m */,
 				04FFB7F9173D41190049AC9E /* DatabaseManager.h */,
 				04FFB7FA173D41190049AC9E /* DatabaseManager.m */,
+				04FFB7F6173D41190049AC9E /* CategoryViewController.h */,
+				04FFB7F7173D41190049AC9E /* CategoryViewController.m */,
 				04FFB7FE173D41190049AC9E /* DisplayViewController.h */,
 				04FFB7FF173D41190049AC9E /* DisplayViewController.m */,
+				04FFB827173D41190049AC9E /* PostViewController.h */,
+				04FFB828173D41190049AC9E /* PostViewController.m */,
 			);
 			path = SuiWei;
 			sourceTree = "<group>";
@@ -348,13 +345,6 @@
 				04FFB820173D41190049AC9E /* NSString+Hashing.m */,
 			);
 			path = Hash;
-			sourceTree = "<group>";
-		};
-		04FFB829173D41190049AC9E /* SDWebImage */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = SDWebImage;
 			sourceTree = "<group>";
 		};
 		04FFB82A173D41190049AC9E /* sinaweibo_ios_sdk */ = {
@@ -500,6 +490,7 @@
 				04FFB864173D41190049AC9E /* headView.xib in Resources */,
 				04FFB865173D41190049AC9E /* home.png in Resources */,
 				04FFB86A173D41190049AC9E /* SinaWeibo.bundle in Resources */,
+				04FFB878173D4D710049AC9E /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,7 +521,6 @@
 				04FFB861173D41190049AC9E /* FMResultSet.m in Sources */,
 				04FFB862173D41190049AC9E /* NSString+Hashing.m in Sources */,
 				04FFB866173D41190049AC9E /* main.m in Sources */,
-				04FFB867173D41190049AC9E /* MainViewController.m in Sources */,
 				04FFB868173D41190049AC9E /* PostViewController.m in Sources */,
 				04FFB869173D41190049AC9E /* JSONKit.m in Sources */,
 				04FFB86B173D41190049AC9E /* SinaWeibo.m in Sources */,

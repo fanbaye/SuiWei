@@ -15,5 +15,7 @@
 @property (retain, nonatomic) UILabel *labelPostTime;
 @property (retain, nonatomic) UILabel *labelPostSource;
 @property (retain, nonatomic) UIImageView *statusImage;
+@property (retain, nonatomic) UILabel *labelRetweetContent;
+@property (retain, nonatomic) UIImageView *retweetImageView;
 
 @end

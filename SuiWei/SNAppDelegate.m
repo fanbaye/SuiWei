@@ -9,14 +9,10 @@
 #import "SNAppDelegate.h"
 
 #import "SinaWeibo.h"
-#import "MainViewController.h"
+#import "CategoryViewController.h"
 
 
 @implementation SNAppDelegate
-
-{
-    MainViewController *_viewController;
-}
 
 @synthesize sinaweibo;
 @synthesize window = _window;
@@ -26,7 +22,6 @@
 {
     [sinaweibo release];
     [_window release];
-    [_viewController release];
     [super dealloc];
 }
 
@@ -36,13 +31,13 @@
     // Override point for customization after application launch.
 //    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     
-    _viewController = [[[MainViewController alloc] init] autorelease];
-    
-    self.window.rootViewController = _viewController;
+    CategoryViewController *cvc = [[CategoryViewController alloc] init];
+    self.window.rootViewController = cvc;
+    [cvc release];
 
     [self.window makeKeyAndVisible];
     
-    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:_viewController];
+    sinaweibo = [[SinaWeibo alloc] initWithAppKey:kAppKey appSecret:kAppSecret appRedirectURI:kAppRedirectURI andDelegate:cvc];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *sinaweiboInfo = [defaults objectForKey:@"SinaWeiboAuthData"];
     if ([sinaweiboInfo objectForKey:@"AccessTokenKey"] && [sinaweiboInfo objectForKey:@"ExpirationDateKey"] && [sinaweiboInfo objectForKey:@"UserIDKey"])

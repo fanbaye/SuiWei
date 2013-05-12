@@ -7,23 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SinaWeibo.h"
+#import "SinaWeiboRequest.h"
 
-@protocol PostViewControllerDelegate <NSObject>
+enum {
+    Back = 0,
+    PostText,
+    ChooseImage
+    };
 
-- (void)hideEdit;
-- (void)postText:(NSString *)text;
-- (void)postText:(NSString *)text AndImage:(UIImage *)image;
+@interface PostViewController : UIViewController <UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIActionSheetDelegate, SinaWeiboRequestDelegate>
 
-@end
+@property (nonatomic, retain) UIImage *userImage;
+@property (nonatomic, retain) UITextView *editTextView;
 
-@interface PostViewController : UIViewController <UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIActionSheetDelegate>
-
-{
-    id<PostViewControllerDelegate> _delegate;
-    UIImageView *_userPhoto;
-}
-
-@property (nonatomic, assign) id<PostViewControllerDelegate> delegate;
-@property (nonatomic, retain) UIImageView *userPhoto;
-- (void)showKeyboard;
 @end

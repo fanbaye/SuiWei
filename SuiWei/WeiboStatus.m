@@ -17,6 +17,9 @@
 @synthesize imgStr = _imgStr;
 @synthesize sourceStr = _sourceStr;
 @synthesize idStr = _idStr;
+@synthesize reAuthorStr = _reAuthorStr;
+@synthesize reContentStr = _reContentStr;
+@synthesize reImageStr = _reImageStr;
 
 - (void)dealloc
 {
@@ -26,6 +29,9 @@
     self.imgStr = nil;
     self.sourceStr = nil;
     self.idStr = nil;
+    self.reImageStr = nil;
+    self.reAuthorStr = nil;
+    self.reContentStr = nil;
     [super dealloc];
 }
 
@@ -40,8 +46,8 @@
     NSString *time = nil;
     if (timeInterval < 10) {
         time = @"10秒前";
-    }else if (timeInterval < 30){
-        time = @"30秒前";
+    }else if (timeInterval < 60){
+        time = @"50秒前";
     }else if (timeInterval/60 < 60){
         time = [NSString stringWithFormat:@"%d分钟前", (int)timeInterval/60];
     }else if (timeInterval/3600 < 24){
@@ -65,9 +71,16 @@
 {
     WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     CGSize size = [self contentSize];
+    CGSize retweetSize = [self retweetContentSize];
     float imgHeight = 0;
     if (_imgStr) {
         imgHeight = cell.statusImage.frame.size.height+5;
+    }else{
+        if (_reImageStr) {
+            imgHeight = cell.retweetImageView.frame.size.height+5+retweetSize.height+5;
+        }else{
+            imgHeight = retweetSize.height+5;
+        }
     }
     return cell.labelContent.frame.origin.y+size.height+5+imgHeight+cell.labelPostSource.frame.size.height+5;
 }
@@ -76,6 +89,12 @@
 {
     WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     return [_contentStr sizeWithFont:cell.labelContent.font constrainedToSize:CGSizeMake(cell.labelContent.frame.size.width, 1000) lineBreakMode:NSLineBreakByWordWrapping];
+}
+
+- (CGSize)retweetContentSize
+{
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
+    return [[_reAuthorStr stringByAppendingString:_reContentStr] sizeWithFont:cell.labelRetweetContent.font constrainedToSize:CGSizeMake(cell.labelRetweetContent.frame.size.width, 1000) lineBreakMode:NSLineBreakByWordWrapping];
 }
 
 #pragma mark - UIRect
@@ -90,18 +109,45 @@
 {
     WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
     CGSize size = [self contentSize];
-    if (_imgStr) {
-        return CGRectMake(cell.statusImage.frame.origin.x, cell.labelContent.frame.origin.y+size.height+5, cell.statusImage.frame.size.width, cell.statusImage.frame.size.height);
-    }else{
-        return CGRectMake(0, cell.labelContent.frame.origin.y+size.height, 0, 0);
-    }
+ 
+    return CGRectMake(cell.statusImage.frame.origin.x, cell.labelContent.frame.origin.y+size.height+5, cell.statusImage.frame.size.width, cell.statusImage.frame.size.height);
+   
+}
+
+- (CGRect)retweetContentRect
+{
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
+    CGSize contentSize = [self contentSize];
+    CGSize retweetContentSize = [self retweetContentSize];
+
+    return CGRectMake(cell.labelRetweetContent.frame.origin.x, cell.labelContent.frame.origin.y+contentSize.height+5, cell.labelRetweetContent.frame.size.width, retweetContentSize.height);
+    
+}
+
+- (CGRect)retweetImageRect
+{
+    WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
+    CGRect retweetContentRect = [self retweetContentRect];
+
+    return CGRectMake(cell.retweetImageView.frame.origin.x, retweetContentRect.origin.y+retweetContentRect.size.height+5, cell.retweetImageView.frame.size.width, cell.retweetImageView.frame.size.height);
+    
 }
 
 - (CGRect)sourceRect
 {
     WeiboCell *cell = [[[WeiboCell alloc] init] autorelease];
-    CGRect rect = [self imageRect];
-    return CGRectMake(cell.labelPostSource.frame.origin.x, rect.origin.y+rect.size.height+5, cell.labelPostSource.frame.size.width, cell.labelPostSource.frame.size.height);
+    if (_imgStr) {
+        CGRect rect = [self imageRect];
+        return CGRectMake(cell.labelPostSource.frame.origin.x, rect.origin.y+rect.size.height+5, cell.labelPostSource.frame.size.width, cell.labelPostSource.frame.size.height);
+    }else {
+        if (_reImageStr) {
+            CGRect rect = [self retweetImageRect];
+            return CGRectMake(cell.labelPostSource.frame.origin.x, rect.origin.y+rect.size.height+5, cell.labelPostSource.frame.size.width, cell.labelPostSource.frame.size.height);
+        }else{
+            CGRect rect = [self retweetContentRect];
+            return CGRectMake(cell.labelPostSource.frame.origin.x, rect.origin.y+rect.size.height+5, cell.labelPostSource.frame.size.width, cell.labelPostSource.frame.size.height);
+        }
+    }
 }
 
 @end

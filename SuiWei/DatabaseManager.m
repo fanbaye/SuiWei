@@ -30,7 +30,7 @@
             NSLog(@"打开数据库失败");
             return self;
         }
-        res = [_database executeUpdate:@"create table if not exists weibo(id, author, postTime, content, imageURL, postSource)"];
+        res = [_database executeUpdate:@"create table if not exists weibo(id, author, postTime, content, imageURL, postSource, reAuthor, reContent, reImageURL)"];
         if (!res) {
             NSLog(@"创建表格失败");
             return self;
@@ -41,7 +41,7 @@
 
 - (BOOL)databaseInsert:(WeiboStatus *)status
 {
-    BOOL res = [_database executeUpdate:@"insert into weibo values(?,?,?,?,?,?)",status.idStr, status.authorStr, status.timeStr, status.contentStr, status.imgStr, status.sourceStr];
+    BOOL res = [_database executeUpdate:@"insert into weibo values(?,?,?,?,?,?,?,?,?)",status.idStr, status.authorStr, status.timeStr, status.contentStr, status.imgStr, status.sourceStr, status.reAuthorStr, status.reContentStr, status.reImageStr];
     if (!res) {
         NSLog(@"插入数据失败");
         return NO;
@@ -61,6 +61,9 @@
         status.imgStr = [set stringForColumn:@"imageURL"];
         status.sourceStr = [set stringForColumn:@"postSource"];
         status.idStr = [set stringForColumn:@"id"];
+        status.reAuthorStr = [set stringForColumn:@"reAuthor"];
+        status.reContentStr = [set stringForColumn:@"reContent"];
+        status.reImageStr = [set stringForColumn:@"reImageURL"];
         [array addObject:status];
         [status release];
     }
