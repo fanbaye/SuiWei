@@ -12,6 +12,7 @@
 #import "DatabaseManager.h"
 #import "NSString+Hashing.h"
 #import "SNAppDelegate.h"
+#import "UIImageView+WebCache.h"
 
 @interface DisplayViewController ()
 
@@ -23,6 +24,7 @@
 
 {
     EGORefreshTableHeaderView *_headView;
+    YZYRefreshTableFooterView *_footView;
     BOOL _isReflesh;
     UITableView *_tableView;
 }
@@ -62,6 +64,7 @@
                                                  green:(float)247/255
                                                   blue:(float)247/255
                                                  alpha:1];
+    _tableView.scrollsToTop = YES;
     _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     _tableView.dataSource = self;
     _tableView.delegate = self;
@@ -72,6 +75,11 @@
     _headView.delegate = self;
     [_tableView addSubview:_headView];
     [_headView release];
+    
+    _footView = [[YZYRefreshTableFooterView alloc] initWithFrame:CGRectMake(0, 460, 320, 460)];
+    _footView.delegate = self;
+    [_tableView addSubview:_footView];
+    [_footView release];
     
     // 滑动手势 - 隐藏table
     UISwipeGestureRecognizer *sgr = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hideStatusesPanel)];
@@ -103,8 +111,32 @@
 - (void)updateData
 {
     [self getStatusesFromDatabase];
-    [_headView egoRefreshScrollViewDataSourceDidFinishedLoading:_tableView];
+    
     _isReflesh = NO;
+}
+
+- (void)freshScrollViewDataSourceDidFinishedLoading
+{
+    [_headView egoRefreshScrollViewDataSourceDidFinishedLoading:_tableView];
+    [_footView yzyRefreshScrollViewDataSourceDidFinishedLoading:_tableView];
+    _footView.hidden = YES;
+}
+
+#pragma mark - RefleshFootView Delegate Methods
+- (BOOL)yzyRefreshTableFooterDataSourceIsLoading:(YZYRefreshTableFooterView *)view
+{
+    return _isReflesh;
+}
+
+- (NSDate *)yzyRefreshTableFooterDataSourceLastUpdated:(YZYRefreshTableFooterView *)view
+{
+    return [NSDate date];
+}
+
+- (void)yzyRefreshTableFooterDidTriggerRefresh:(YZYRefreshTableFooterView *)view
+{
+    [self getFriendsStatuses:NO];
+    _isReflesh = YES;
 }
 
 #pragma mark - RefleshHeadView Delegate Methods
@@ -115,7 +147,7 @@
 
 - (void)egoRefreshTableHeaderDidTriggerRefresh:(EGORefreshTableHeaderView *)view
 {
-    [self getFriendsStatuses];
+    [self getFriendsStatuses:YES];
     _isReflesh = YES;
 }
 
@@ -129,13 +161,15 @@
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     [_headView egoRefreshScrollViewDidEndDragging:scrollView];
+    _footView.hidden = NO;
+    [_footView yzyRefreshScrollViewDidEndDragging:scrollView];
     
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     [_headView egoRefreshScrollViewDidScroll:scrollView];
-    
+    [_footView yzyRefreshScrollViewDidScroll:scrollView];
 }
 
 #pragma mark - Weibo Delegate Methods
@@ -146,14 +180,22 @@
 }
 
 // 全部微博
-- (void)getFriendsStatuses
+- (void)getFriendsStatuses:(BOOL)max
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     DatabaseManager *db = [[DatabaseManager alloc] init];
-    NSString *maxId = [db databaseGetLastId];
+    NSString *Id = [db databaseGetId:max];
     SinaWeibo *sinaweibo = [self sinaweibo];
+    NSString *prama;
+    if (max) {
+        prama = @"since_id";
+    }else{
+        prama = @"max_id";
+        Id = [NSString stringWithFormat:@"%lld", [Id longLongValue]-1];
+    }
+    
     [sinaweibo requestWithURL:@"statuses/friends_timeline.json"
-                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid",maxId , @"since_id", nil]
+                       params:[NSMutableDictionary dictionaryWithObjectsAndKeys:sinaweibo.userID, @"uid",Id , prama, @"5", @"count", nil]
                    httpMethod:@"GET"
                      delegate:self];
     [db databaseClose];
@@ -165,6 +207,7 @@
 {
     NSLog(@"get friends_timeline failed");
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [self freshScrollViewDataSourceDidFinishedLoading];
 }
 
 - (void)request:(SinaWeiboRequest *)request didFinishLoadingWithResult:(id)result
@@ -179,6 +222,9 @@
         status.imgStr = [dic objectForKey:@"thumbnail_pic"];
         status.sourceStr = [dic objectForKey:@"source"];
         status.idStr = [dic objectForKey:@"idstr"];
+        status.authorImageStr = [[dic objectForKey:@"user"] objectForKey:@"profile_image_url"];
+        status.commentsStr = [dic objectForKey:@"comments_count"];
+        status.repostsStr = [dic objectForKey:@"reposts_count"];
         NSDictionary *reDic = [dic objectForKey:@"retweeted_status"];
         if (dic) {
             status.reAuthorStr = [[reDic objectForKey:@"user"] objectForKey:@"screen_name"];
@@ -199,35 +245,8 @@
     [self updateData];
     
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [self freshScrollViewDataSourceDidFinishedLoading];
     NSLog(@"get friends_timeline success");
-}
-
-#pragma mark - ASIHTTPRequest Delegate Methods
-- (void)requestFinished:(ASIHTTPRequest *)request
-{
-    NSData *data = request.responseData;
-    NSString *path = NSHomeDirectory();
-    NSString *urlStr = [NSString stringWithFormat:@"%@", request.url];
-    path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [urlStr MD5Hash]]];
-    BOOL res = [data writeToFile:path atomically:NO];
-    if (!res) {
-        NSLog(@"缓存图片失败");
-    }
-    
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:request.tag inSection:0];
-    WeiboCell *cell = (WeiboCell *)[_tableView cellForRowAtIndexPath:indexPath];
-    WeiboStatus *status = [_statuses objectAtIndex:request.tag];
-    if (status.imgStr) {
-        [cell.statusImage setImage:[UIImage imageWithData:data]];
-    }else{
-        [cell.retweetImageView setImage:[UIImage imageWithData:data]];
-    }
-
-}
-
-- (void)requestFailed:(ASIHTTPRequest *)request
-{
-    NSLog(@"get img failed");
 }
 
 #pragma mark - TableView Delegate Methods
@@ -247,50 +266,30 @@
     }
     WeiboStatus *st = [_statuses objectAtIndex:indexPath.row];
     
+    [cell.authorImageView setImageWithURL:[NSURL URLWithString:st.authorImageStr]];
     cell.labelAuthor.text = st.authorStr;
     cell.labelPostTime.text = [st getTime];
+    cell.labelComments.text = st.commentsStr;
+    cell.labelReports.text = st.repostsStr;
     cell.labelContent.text = st.contentStr;
     cell.labelContent.frame = [st contentRect];
+    cell.leftLine.frame = [st leftLineRect];
     
     // 图片
     cell.statusImage.image = nil;
     if (st.imgStr) {
-        NSString *path = NSHomeDirectory();
-        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [st.imgStr MD5Hash]]];
-        NSFileManager *fm = [NSFileManager defaultManager];
-        BOOL res = [fm fileExistsAtPath:path];
-        if (res) {
-            cell.statusImage.image = [UIImage imageWithContentsOfFile:path];
-        }else{
-            NSURL *url = [NSURL URLWithString:st.imgStr];
-            ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy | ASIDoNotReadFromCacheCachePolicy;
-            request.delegate = self;
-            request.tag = indexPath.row;
-            [request startAsynchronous];
-        }
+        [cell.statusImage setImageWithURL:[NSURL URLWithString:st.imgStr]];
     }
     cell.statusImage.frame = [st imageRect];
     
+    // 转发的内容
     cell.labelRetweetContent.text = [NSString stringWithFormat:@"@%@:%@", st.reAuthorStr, st.reContentStr];
     cell.labelRetweetContent.frame = [st retweetContentRect];
     
+    // 转发的图片
     cell.retweetImageView.image = nil;
     if (st.reImageStr) {
-        NSString *path = NSHomeDirectory();
-        path = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"tmp/%@", [st.reImageStr MD5Hash]]];
-        NSFileManager *fm = [NSFileManager defaultManager];
-        BOOL res = [fm fileExistsAtPath:path];
-        if (res) {
-            cell.retweetImageView.image = [UIImage imageWithContentsOfFile:path];
-        }else{
-            NSURL *url = [NSURL URLWithString:st.reImageStr];
-            ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-            request.cachePolicy = ASIDoNotWriteToCacheCachePolicy | ASIDoNotReadFromCacheCachePolicy;
-            request.delegate = self;
-            request.tag = indexPath.row;
-            [request startAsynchronous];
-        }
+        [cell.retweetImageView setImageWithURL:[NSURL URLWithString:st.reImageStr]];
     }
     cell.retweetImageView.frame = [st retweetImageRect];
     

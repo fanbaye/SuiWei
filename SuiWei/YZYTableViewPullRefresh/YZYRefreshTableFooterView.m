@@ -2,7 +2,6 @@
 //  EGORefreshTableFooterView.m
 //  Demo
 //
-//修改人：禚来强 iphone开发qq群：79190809 邮箱：zhuolaiqiang@gmail.com
 //
 
 
@@ -29,8 +28,7 @@
     if (self) {
 		
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-//		self.backgroundColor = [UIColor colorWithRed:226.0/255.0 green:231.0/255.0 blue:237.0/255.0 alpha:1.0];
-        self.backgroundColor = [UIColor clearColor];
+		self.backgroundColor = [UIColor colorWithRed:226.0/255.0 green:231.0/255.0 blue:237.0/255.0 alpha:1.0];
 
 		UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, RefreshViewHight - 30.0f, self.frame.size.width, 20.0f)];
 		label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -39,7 +37,7 @@
 		label.shadowColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
 		label.shadowOffset = CGSizeMake(0.0f, 1.0f);
 		label.backgroundColor = [UIColor clearColor];
-		label.textAlignment = UITextAlignmentCenter;
+		label.textAlignment = NSTextAlignmentCenter;
 		[self addSubview:label];
 		_lastUpdatedLabel=label;
 		[label release];
@@ -51,7 +49,7 @@
 		label.shadowColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
 		label.shadowOffset = CGSizeMake(0.0f, 1.0f);
 		label.backgroundColor = [UIColor clearColor];
-		label.textAlignment = UITextAlignmentCenter;
+		label.textAlignment = NSTextAlignmentCenter;
 		[self addSubview:label];
 		_statusLabel=label;
 		[label release];
@@ -169,6 +167,11 @@
 //手指屏幕上不断拖动调用此方法
 - (void)yzyRefreshScrollViewDidScroll:(UIScrollView *)scrollView {	
 	
+    if (scrollView.contentSize.height > scrollView.frame.size.height) {
+        self.frame = CGRectMake(0, scrollView.contentSize.height, 320, 460);
+    }
+    
+    
 	if (_state == YZYOPullRefreshLoading) {
 		
 //		CGFloat offset = MAX(scrollView.contentOffset.y * -1, 0);
@@ -222,7 +225,6 @@
 
 //当开发者页面页面刷新完毕调用此方法，[delegate yzyRefreshScrollViewDataSourceDidFinishedLoading: scrollView];
 - (void)yzyRefreshScrollViewDataSourceDidFinishedLoading:(UIScrollView *)scrollView {	
-	
 	[UIView beginAnimations:nil context:NULL];
 	[UIView setAnimationDuration:.3];
 	[scrollView setContentInset:UIEdgeInsetsMake(0.0f, 0.0f, 0.0f, 0.0f)];

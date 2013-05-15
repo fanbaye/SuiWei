@@ -16,7 +16,7 @@
 
 - (BOOL)databaseInsert:(WeiboStatus *)status;
 - (NSMutableArray *)databaseAllStatuses;
-- (NSString *)databaseGetLastId;
+- (NSString *)databaseGetId:(BOOL)max;
 - (BOOL)databaseDropTable;
 - (void)databaseClose;
 @end

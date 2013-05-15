@@ -10,4 +10,8 @@
 
 @interface CategoryCell : UITableViewCell
 
+@property (nonatomic, retain) UIImageView *icon;
+@property (nonatomic, retain) UILabel *category;
+@property (nonatomic, retain) UIImageView *arrow;
+
 @end

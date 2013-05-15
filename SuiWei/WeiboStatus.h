@@ -8,11 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+#define BLANK 10
+
 @interface WeiboStatus : NSObject
 
+@property (nonatomic, copy) NSString *authorImageStr;
 @property (nonatomic, copy) NSString *contentStr;
 @property (nonatomic, copy) NSString *authorStr;
 @property (nonatomic, copy) NSString *timeStr;
+@property (nonatomic, copy) NSString *commentsStr;
+@property (nonatomic, copy) NSString *repostsStr;
 @property (nonatomic, copy) NSString *imgStr;
 @property (nonatomic, copy) NSString *sourceStr;
 @property (nonatomic, copy) NSString *idStr;
@@ -29,5 +34,6 @@
 - (CGRect)retweetContentRect;
 - (CGRect)retweetImageRect;
 - (CGRect)sourceRect;
+- (CGRect)leftLineRect;
 
 @end

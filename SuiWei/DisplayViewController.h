@@ -7,8 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ASIHTTPRequest.h"
 #import "EGORefreshTableHeaderView.h"
+#import "YZYRefreshTableFooterView.h"
 #import "SinaWeibo.h"
 #import "SinaWeiboRequest.h"
 
@@ -18,13 +18,12 @@
 
 @end
 
-@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, ASIHTTPRequestDelegate, EGORefreshTableHeaderDelegate, SinaWeiboRequestDelegate>
+@interface DisplayViewController : UIViewController <UITableViewDataSource, UITableViewDelegate,  EGORefreshTableHeaderDelegate, SinaWeiboRequestDelegate, YZYRefreshTableFooterDelegate>
 
 {
     id<DisplayViewControllerDelegate> _delegate;
 }
 
 @property (nonatomic, assign) id<DisplayViewControllerDelegate> delegate;
-- (void)getFriendsStatuses;
 
 @end

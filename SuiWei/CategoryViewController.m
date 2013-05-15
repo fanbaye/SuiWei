@@ -12,6 +12,10 @@
 #import "WeiboStatus.h"
 #import "SNAppDelegate.h"
 #import "DatabaseManager.h"
+#import "UIImageView+WebCache.h"
+#import "SDImageCache.h"
+#import "TableHeadView.h"
+#import "CategoryCell.h"
 
 @interface CategoryViewController ()
 
@@ -20,7 +24,7 @@
 @implementation CategoryViewController
 
 {
-    UIView *_headView;
+    TableHeadView *_headView;
     UITableView *_tableView;
     NSArray *_dataArray;
     NSArray *_imageArray;
@@ -46,6 +50,13 @@
     _isHideStatusesPanel = NO;
 	// Do any additional setup after loading the view.
     
+    // 底部设置按钮
+    UIButton *settingBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [settingBtn setImage:[UIImage imageNamed:@"categorySettingBottom"] forState:UIControlStateNormal];
+    settingBtn.frame = CGRectMake(0, 412, 320, 48);
+    [settingBtn addTarget:self action:@selector(settingClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:settingBtn];
+    
     _displayvc = [[DisplayViewController alloc] init];
     _displayvc.view.frame = CGRectMake(0, 0, 320, 460);
     _displayvc.delegate = self;
@@ -56,44 +67,46 @@
     _postvc = [[PostViewController alloc] init];
     
     NSArray *sectionOne = [NSArray arrayWithObjects:@"全部微博", @"提到你的", @"评论", @"收藏", nil];
-    NSArray *sectionTwo = [NSArray arrayWithObjects:@"好友", @"娱乐", @"秘密关注", nil];
+    NSArray *sectionTwo = [NSArray arrayWithObjects:@"好友", @"娱乐", @"陌生人", @"秘密关注", nil];
     _dataArray = [[NSArray alloc] initWithObjects:sectionOne, sectionTwo, nil];
     
     sectionOne = [NSArray arrayWithObjects:@"home.png", @"at.png", @"comment.png", @"favourite.png", nil];
-    sectionTwo = [NSArray arrayWithObjects:@"home.png", @"at.png", @"comment.png", nil];
+    sectionTwo = [NSArray arrayWithObjects:@"home.png", @"at.png", @"comment.png", @"favourite.png", nil];
     _imageArray = [[NSArray alloc] initWithObjects:sectionOne, sectionTwo, nil];
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 300, 460) style:UITableViewStylePlain];
-    _tableView.backgroundColor = [UIColor colorWithRed:(float)247/255
-                                                 green:(float)247/255
-                                                  blue:(float)247/255
-                                                 alpha:1];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 320, 460) style:UITableViewStylePlain];
+    _tableView.scrollsToTop = NO;
     _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.backgroundColor = [UIColor colorWithRed:36.0/255.0 green:36.0/255.0 blue:36.0/255.0 alpha:1];
     _tableView.delegate = self;
     _tableView.dataSource = self;
     [self.view addSubview:_tableView];
     [_tableView release];
     
     /*headView begin*/
-    _headView = (UIView *)[[[NSBundle mainBundle] loadNibNamed:@"headView" owner:self options:nil] objectAtIndex:0];
-    _headView.frame = CGRectMake(0, 0, 300, 100);
+    _headView = [[TableHeadView alloc] initWithFrame:CGRectMake(0, 0, 320, 126)];
     
-    UIImageView *photo = (UIImageView *)[_headView viewWithTag:1];
-    photo.userInteractionEnabled = YES;
+    _headView.userPhoto.layer.cornerRadius = 25;
+    _headView.userPhoto.layer.masksToBounds = YES;
+    
+    [_headView.userPhoto setImageWithURL:[NSURL URLWithString:[[NSUserDefaults standardUserDefaults] objectForKey:@"userPhoto"]]];
+    SDImageCache *imageCache = [[SDImageCache alloc] init];
+    [_postvc setUserImage:[imageCache imageFromKey:[[NSUserDefaults standardUserDefaults] objectForKey:@"userPhoto"]]];
+    [imageCache release];
+    
+    _headView.userPhoto.userInteractionEnabled = YES;
     UITapGestureRecognizer *photoTgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tgrClick:)];
-    [photo addGestureRecognizer:photoTgr];
+    [_headView.userPhoto addGestureRecognizer:photoTgr];
     [photoTgr release];
     
-    UIView *timeLine = (UIView *)[_headView viewWithTag:9];
     UITapGestureRecognizer *timeLineTgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tgrClick:)];
-    [timeLine addGestureRecognizer:timeLineTgr];
+    [_headView.userStatusesView addGestureRecognizer:timeLineTgr];
     [timeLineTgr release];
     
-    UIButton *edit = (UIButton *)[_headView viewWithTag:10];
-    [edit addTarget:self action:@selector(editClick) forControlEvents:UIControlEventTouchUpInside];
+    [_headView.editButton addTarget:self action:@selector(editClick) forControlEvents:UIControlEventTouchUpInside];
     
     _tableView.tableHeaderView = _headView;
-    _tableView.backgroundColor = [UIColor whiteColor];
+    
     [self.view sendSubviewToBack:_tableView];
     /*headView end*/
     
@@ -117,6 +130,11 @@
     }
 }
 
+- (void)settingClick
+{
+    NSLog(@"暂无功能");
+}
+
 - (void)editClick
 {
     [UIView animateWithDuration:0.2 animations:^{
@@ -136,8 +154,7 @@
         [as showInView:self.view];
         [as release];
     }else if (sender.view.tag == 9) {
-        UILabel *label = (UILabel *)[_headView viewWithTag:6];
-        label.textColor = [UIColor blackColor];
+        _headView.userStatusesCountLabel.textColor = [UIColor blackColor];
         sender.view.backgroundColor = [UIColor whiteColor];
     }
 }
@@ -146,36 +163,31 @@
 {
     
     // 头像
-    UIImageView *userImageView = (UIImageView *)[_headView viewWithTag:1];
-    userImageView.layer.cornerRadius = 23;
-    userImageView.layer.masksToBounds = YES;
-    UIImage *image = [UIImage imageWithData:
-                      [NSData dataWithContentsOfURL:
-                       [NSURL URLWithString:
-                        [userInfo objectForKey:@"profile_image_url"]]]];
-    [userImageView setImage:image];
-    _postvc.userImage = image;
+    [_headView.userPhoto setImageWithURL:[NSURL URLWithString:[userInfo objectForKey:@"profile_image_url"]]];
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud setObject:[userInfo objectForKey:@"profile_image_url"] forKey:@"userPhoto"];
+    [ud synchronize];
+    
+    SDImageCache *imageCache = [[SDImageCache alloc] init];
+    [_postvc setUserImage:[imageCache imageFromKey:[userInfo objectForKey:@"profile_image_url"]]];
+    [imageCache release];
+    
     
     // 名字
-    UILabel *userName = (UILabel *)[_headView viewWithTag:2];
-    userName.text = [userInfo objectForKey:@"screen_name"];
+    _headView.userNameLabel.text = [userInfo objectForKey:@"screen_name"];
 
     
     // 所在地
-    UILabel *userLocation = (UILabel *)[_headView viewWithTag:3];
-    userLocation.text = [userInfo objectForKey:@"location"];
+    _headView.userCityLabel.text = [userInfo objectForKey:@"location"];
     
     // 关注
-    UILabel *userFriendsCount = (UILabel *)[_headView viewWithTag:4];
-    userFriendsCount.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"friends_count"]];
+    _headView.userFriendsCountLabel.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"friends_count"]];
     
     // 粉丝
-    UILabel *userFollowersCount = (UILabel *)[_headView viewWithTag:5];
-    userFollowersCount.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"followers_count"]];
+    _headView.userFollowersCountLabel.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"followers_count"]];
     
     // 微博
-    UILabel *userStatusesCount = (UILabel *)[_headView viewWithTag:6];
-    userStatusesCount.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"statuses_count"]];
+    _headView.userStatusesCountLabel.text = [NSString stringWithFormat:@"%@", [userInfo objectForKey:@"statuses_count"]];
 }
 
 #pragma mark - UIActionSheet Delegate Methods
@@ -202,28 +214,15 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellName = @"cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellName];
+    CategoryCell *cell = [tableView dequeueReusableCellWithIdentifier:cellName];
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellName] autorelease];
-        cell.textLabel.font = [UIFont fontWithName:@"Helvetica" size:16];
-        cell.textLabel.textColor = [UIColor grayColor];
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cell.selectionStyle = UITableViewCellSelectionStyleGray;
+        cell = [[[CategoryCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellName] autorelease];
     }
     
-    cell.textLabel.text = [[_dataArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
-    cell.imageView.image = [UIImage imageNamed:[[_imageArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row]];
+    cell.category.text = [[_dataArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    cell.icon.image = [UIImage imageNamed:[[_imageArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row]];
     
     return cell;
-}
-
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    if (section == 1) {
-        return @"好友分组";
-    }else{
-        return nil;
-    }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -235,6 +234,24 @@
         [db databaseDropTable];
         [db databaseClose];
         [db release];
+    }
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    if (section == 1) {
+        return [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"fenzu"]] autorelease];
+    }else{
+        return nil;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section != 1) {
+        return 0;
+    }else{
+        return 22;
     }
 }
 
@@ -253,7 +270,7 @@
 {
     if (!_isHideStatusesPanel) {
         [UIView animateWithDuration:0.2 animations:^{
-            _displayvc.view.frame = CGRectMake(300, 0, 320, 460);
+            _displayvc.view.frame = CGRectMake(280, 0, 320, 460);
         }];
         _isHideStatusesPanel = YES;
     }
@@ -270,7 +287,10 @@
 // 移除用户数据
 - (void)removeAuthData
 {
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SinaWeiboAuthData"];
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud removeObjectForKey:@"SinaWeiboAuthData"];
+    [ud removeObjectForKey:@"userPhoto"];
+    [ud synchronize];
 }
 
 
